@@ -1,1 +1,191 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#070706">
+  <title>Painel Administrativo | Clã Fênix</title>
+  <link rel="icon" type="image/webp" href="../assets/favicon.webp">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Orbitron:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="admin.css?v=20260826-final">
+</head>
+<body>
+  <section class="login-page" id="loginPage">
+    <div class="login-card">
+      <div class="login-logo admin-monogram" aria-hidden="true">F</div>
+      <span class="kicker">ACESSO RESTRITO</span><h1>Painel Fênix</h1>
+      <p>Gerencie o site inteiro e todos os layouts em um só lugar.</p>
+      <form id="loginForm"><label>E-mail<input id="loginEmail" type="email" required placeholder="Seu e-mail"></label><label>Senha<input id="loginPassword" type="password" required placeholder="Sua senha"></label><button class="primary full" type="submit">Entrar</button></form>
+      <div class="login-message" id="loginMessage"></div><a class="back-link" href="../">← Voltar para o site</a>
+    </div>
+  </section>
 
+  <div class="dashboard" id="dashboard" hidden>
+    <aside class="sidebar" id="sidebar">
+      <a class="side-brand" href="../"><span class="side-monogram admin-monogram" aria-hidden="true">F</span><div><strong>CLÃ FÊNIX</strong><small>ADMIN CMS</small></div></a>
+      <nav>
+        <button class="nav-item active" data-view="overview">⌂ <span>Visão geral</span></button>
+        <button class="nav-item" data-view="home">🏠 <span>Página inicial</span></button>
+        <button class="nav-item" data-view="links">🔗 <span>Links oficiais</span></button>
+        <button class="nav-item" data-view="content">✦ <span>Missão e conteúdo</span></button>
+        <button class="nav-item" data-view="appearance">🎨 <span>Aparência</span></button>
+        <button class="nav-item" data-view="layouts">🛡️ <span>Layouts</span></button>
+        <button class="nav-item" id="btnNewSidebar">＋ <span>Novo layout</span></button>
+        <a class="nav-item" href="../" target="_blank">↗ <span>Ver site</span></a>
+      </nav>
+      <div class="side-bottom"><button class="nav-item danger" id="btnLogout">⇥ <span>Sair</span></button></div>
+    </aside>
+
+    <main class="admin-main">
+      <header class="admin-top">
+        <button class="menu-btn" id="menuBtn">☰</button>
+        <div><span class="kicker">PAINEL ADMINISTRATIVO</span><h1 id="pageTitle">Visão geral</h1></div>
+        <a class="secondary view-site" href="../" target="_blank">↗ Ver site</a>
+      </header>
+
+      <section class="view active" data-view-panel="overview">
+        <div class="welcome-card"><div><span class="kicker">CMS CLÃ FÊNIX</span><h2>Controle todo o portal pelo celular</h2><p>Altere textos, links, banners, cores, seções e layouts sem editar o GitHub.</p></div><div class="welcome-icon" aria-hidden="true"><span>F</span></div></div>
+        <section class="metrics"><article><span>Layouts</span><strong id="mTotal">0</strong><small>cadastrados</small></article><article><span>Ativos</span><strong id="mActive">0</strong><small>visíveis</small></article><article><span>Destaques</span><strong id="mFeatured">0</strong><small>recomendados</small></article><article><span>Site</span><strong id="mSiteStatus">✓</strong><small>configuração online</small></article></section>
+        <div class="quick-admin-grid">
+          <button data-view="home"><span>🏠</span><strong>Editar página inicial</strong><small>Nome, textos e apresentação</small></button>
+          <button data-view="links"><span>🔗</span><strong>Trocar links oficiais</strong><small>Clã, WhatsApp e Supercell</small></button>
+          <button data-view="appearance"><span>🎨</span><strong>Mudar aparência</strong><small>Imagens, cores e seções</small></button>
+          <button data-view="layouts"><span>🛡️</span><strong>Gerenciar layouts</strong><small>Galerias e importação automática</small></button>
+        </div>
+        <div class="notice" id="cmsNotice" hidden><strong>⚠️ Falta ativar o CMS no Supabase</strong><p>Verifique no Supabase se a tabela <b>site_config</b> e as permissões do painel estão ativas. Depois atualize esta página.</p></div>
+      </section>
+
+      <section class="view" data-view-panel="home" hidden>
+        <form class="panel settings-form" id="homeForm">
+          <div class="panel-head"><div><h2>Página inicial</h2><p>Textos principais que aparecem no topo do portal.</p></div><button class="primary" type="submit">Salvar alterações</button></div>
+          <div class="form-grid two"><label>Nome do clã<input id="cfgClanName" maxlength="60"></label><label>Nome do portal<input id="cfgPortalLabel" maxlength="60"></label></div>
+          <div class="form-grid two"><label>Slogan<input id="cfgSlogan" maxlength="80"></label><label>Tag do clã<input id="cfgClanTag" maxlength="30"></label></div>
+          <div class="form-grid two"><label>Texto pequeno acima do título<input id="cfgHeroEyebrow" maxlength="80"></label><label>Título principal<input id="cfgHeroTitle" maxlength="80"></label></div>
+          <label>Apresentação principal<textarea id="cfgHeroIntro" rows="4" maxlength="600"></textarea></label>
+          <label>Segundo texto da apresentação<textarea id="cfgHeroSecondary" rows="4" maxlength="600"></textarea></label>
+          <div class="divider"></div>
+          <h3>Títulos da área de layouts</h3>
+          <div class="form-grid two"><label>Chamada<input id="cfgLayoutsKicker" maxlength="80"></label><label>Título<input id="cfgLayoutsTitle" maxlength="100"></label></div>
+          <label>Descrição<textarea id="cfgLayoutsSubtitle" rows="3" maxlength="350"></textarea></label>
+        </form>
+      </section>
+
+      <section class="view" data-view-panel="links" hidden>
+        <form class="panel settings-form" id="linksForm">
+          <div class="panel-head"><div><h2>Links oficiais</h2><p>Os três botões principais do portal.</p></div><button class="primary" type="submit">Salvar links</button></div>
+          <div class="link-editor red"><span class="editor-icon">⚔️</span><div class="grow"><h3>Clã no Clash of Clans</h3><label>Link<input id="cfgClanUrl" type="url"></label><div class="form-grid two"><label>Nome do botão<input id="cfgClanLabel"></label><label>Chamada<input id="cfgClanCta"></label></div><label>Descrição<input id="cfgClanText"></label></div></div>
+          <div class="link-editor green"><span class="editor-icon">💬</span><div class="grow"><h3>Grupo oficial</h3><label>Link<input id="cfgGroupUrl" type="url"></label><div class="form-grid two"><label>Nome do botão<input id="cfgGroupLabel"></label><label>Chamada<input id="cfgGroupCta"></label></div><label>Descrição<input id="cfgGroupText"></label></div></div>
+          <div class="link-editor blue"><span class="editor-icon">🛒</span><div class="grow"><h3>Loja Supercell</h3><label>Link<input id="cfgStoreUrl" type="url"></label><div class="form-grid two"><label>Nome do botão<input id="cfgStoreLabel"></label><label>Chamada<input id="cfgStoreCta"></label></div><label>Descrição<input id="cfgStoreText"></label></div></div>
+        </form>
+      </section>
+
+      <section class="view" data-view-panel="content" hidden>
+        <form class="panel settings-form" id="contentForm">
+          <div class="panel-head"><div><h2>Missão e conteúdo</h2><p>Edite a missão, os cards, valores e a chamada final.</p></div><button class="primary" type="submit">Salvar conteúdo</button></div>
+          <h3>Missão</h3>
+          <div class="form-grid three"><label>Ícone<input id="cfgMissionIcon" maxlength="10"></label><label>Chamada<input id="cfgMissionKicker"></label><label>Título<input id="cfgMissionTitle"></label></div>
+          <label>Texto da missão<textarea id="cfgMissionText" rows="3"></textarea></label>
+          <div class="divider"></div>
+          <div class="sub-head"><div><h3>O que você encontra aqui</h3><p>Adicione, remova ou reorganize os cards.</p></div><button class="secondary" type="button" id="addResource">＋ Adicionar card</button></div>
+          <div class="form-grid two"><label>Chamada da seção<input id="cfgResourcesKicker"></label><label>Título da seção<input id="cfgResourcesTitle"></label></div><label>Descrição da seção<input id="cfgResourcesSubtitle"></label>
+          <div class="repeat-list" id="resourceEditor"></div>
+          <div class="divider"></div>
+          <div class="sub-head"><div><h3>Valores do clã</h3><p>Controle os valores exibidos no portal.</p></div><button class="secondary" type="button" id="addValue">＋ Adicionar valor</button></div>
+          <div class="form-grid two"><label>Chamada da seção<input id="cfgValuesKicker"></label><label>Título da seção<input id="cfgValuesTitle"></label></div>
+          <div class="repeat-list compact" id="valuesEditor"></div>
+          <div class="divider"></div>
+          <h3>Chamada final</h3>
+          <div class="form-grid two"><label>Chamada<input id="cfgFamilyKicker"></label><label>Título<input id="cfgFamilyTitle"></label></div>
+          <label>Texto<textarea id="cfgFamilyText" rows="3"></textarea></label><div class="form-grid two"><label>Frase final<input id="cfgFamilyQuote"></label><label>Texto do botão<input id="cfgFamilyCta"></label></div>
+        </form>
+      </section>
+
+      <section class="view" data-view-panel="appearance" hidden>
+        <form class="panel settings-form" id="appearanceForm">
+          <div class="panel-head"><div><h2>Aparência do site</h2><p>Troque imagens, cores e escolha quais seções aparecem.</p></div><button class="primary" type="submit">Salvar aparência</button></div>
+          <h3>Cores</h3>
+          <div class="color-grid"><label>Cor principal<div class="color-field"><input id="cfgPrimaryColor" type="color"><input id="cfgPrimaryColorText" maxlength="7"></div></label><label>Cor de destaque<div class="color-field"><input id="cfgAccentColor" type="color"><input id="cfgAccentColorText" maxlength="7"></div></label><label>Cor de fundo<div class="color-field"><input id="cfgBackgroundColor" type="color"><input id="cfgBackgroundColorText" maxlength="7"></div></label></div>
+          <div class="divider"></div>
+          <h3>Banners</h3><p class="muted">O símbolo do site permanece como a letra F. Aqui você pode trocar apenas os fundos, pelo celular.</p>
+          <div class="asset-grid">
+            <div class="asset-card wide"><div class="asset-bg-preview" id="heroBgPreview"></div><div><strong>Fundo do topo</strong><small>Banner opcional</small><label class="upload-btn">Selecionar<input id="cfgHeroBgFile" type="file" accept="image/png,image/jpeg,image/webp"></label></div></div>
+            <div class="asset-card wide"><div class="asset-bg-preview" id="familyBgPreview"></div><div><strong>Fundo da chamada final</strong><small>Banner opcional</small><label class="upload-btn">Selecionar<input id="cfgFamilyBgFile" type="file" accept="image/png,image/jpeg,image/webp"></label></div></div>
+          </div>
+          <div class="divider"></div>
+          <h3>Seções visíveis</h3>
+          <div class="visibility-grid">
+            <label><input id="showHero" type="checkbox"><span>Topo / apresentação</span></label><label><input id="showQuickLinks" type="checkbox"><span>Links oficiais</span></label><label><input id="showMission" type="checkbox"><span>Missão</span></label><label><input id="showResources" type="checkbox"><span>Cards de conteúdo</span></label><label><input id="showLayouts" type="checkbox"><span>Layouts</span></label><label><input id="showValues" type="checkbox"><span>Valores</span></label><label><input id="showFamily" type="checkbox"><span>Chamada final</span></label>
+          </div>
+        </form>
+      </section>
+
+      <section class="view" data-view-panel="layouts" hidden>
+        <div class="metrics layouts-metrics"><article><span>Total</span><strong id="lmTotal">0</strong><small>layouts cadastrados</small></article><article><span>Ativos</span><strong id="lmActive">0</strong><small>visíveis no site</small></article><article><span>Ocultos</span><strong id="lmHidden">0</strong><small>fora do site</small></article><article><span>Destaques</span><strong id="lmFeatured">0</strong><small>recomendados</small></article></div>
+
+        <section class="panel cv-counter-panel">
+          <div class="panel-head">
+            <div>
+              <span class="kicker">CONTADOR POR CENTRO DE VILA</span>
+              <h2>Layouts por CV</h2>
+              <p>Veja quantos layouts estão cadastrados em cada Centro de Vila.</p>
+            </div>
+            <div class="cv-total-box">
+              <span>CVs com layouts</span>
+              <strong id="cvWithLayouts">0</strong>
+            </div>
+          </div>
+          <div class="cv-count-grid" id="cvCountGrid"></div>
+        </section>
+
+        <section class="panel import-panel">
+          <div class="panel-head">
+            <div>
+              <span class="kicker">IMPORTAÇÃO AUTOMÁTICA</span>
+              <h2>Novos layouts encontrados</h2>
+              <p>Busca layouts recentes do CV12 ao CV18. Você decide o que entra no site.</p>
+            </div>
+            <div class="import-actions">
+              <button class="secondary" id="btnScanLayouts" type="button">↻ Verificar agora</button>
+              <button class="primary" id="btnApproveAll" type="button" hidden>＋ Adicionar todos</button>
+            </div>
+          </div>
+          <div class="import-summary">
+            <div><span>Pendentes</span><strong id="importPendingCount">0</strong></div>
+            <div><span>Última verificação</span><strong id="importLastScan">—</strong></div>
+            <div><span>Encontrados</span><strong id="importLastFound">0</strong></div>
+            <div><span>Status</span><strong id="importStatus">Pronto</strong></div>
+          </div>
+          <div class="import-list" id="importList"></div>
+          <div class="empty-import" id="emptyImport">
+            <span>🔎</span>
+            <strong>Nenhum layout novo aguardando aprovação.</strong>
+            <small>Use “Verificar agora” para procurar novidades.</small>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head"><div><h2>Layouts cadastrados</h2><p>Edite, oculte ou exclua qualquer layout.</p></div><div class="panel-actions"><input id="adminSearch" type="search" placeholder="Buscar layout..."><select id="adminCvFilter"><option value="todos">Todos os CVs</option></select><button class="primary" id="btnNewTop" type="button">＋ Adicionar</button></div></div>
+          <div class="layout-list" id="layoutList"></div><div class="empty-admin" id="emptyAdmin" hidden><span>🛡️</span><h3>Nenhum layout cadastrado</h3><p>Use “Adicionar” para começar.</p></div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" id="layoutModal" hidden><div class="modal">
+    <div class="modal-head"><div><span class="kicker">GERENCIAR BASE</span><h2 id="modalTitle">Adicionar layout</h2></div><button class="close-btn" id="btnCloseModal">✕</button></div>
+    <form id="layoutForm"><input type="hidden" id="layoutId"><input type="hidden" id="currentImageUrl"><input type="hidden" id="currentImagePath">
+      <label>Centro de Vila<input id="layoutCv" type="number" min="1" step="1" value="12" required inputmode="numeric" placeholder="Ex.: 18"><small class="field-help">Digite o número do CV. No futuro você poderá usar CV19, CV20 e outros.</small></label>
+      <label>Ordem<input id="layoutOrder" type="number" min="0" value="0"></label>
+      <label>Descrição<textarea id="layoutDescription" rows="3" maxlength="250" placeholder="Descrição curta do layout..."></textarea></label><label>Link do Layout<input id="layoutLink" type="url" required placeholder="https://link.clashofclans.com/..."><small>Cole o link de compartilhamento do layout.</small></label>
+      <div class="upload-box"><div class="preview" id="imagePreview"><span>🖼️</span><small>Prévia da imagem</small></div><label class="file-label">Imagem do layout<input id="layoutImage" type="file" accept="image/png,image/jpeg,image/webp"><span>Selecionar imagem</span><small>PNG, JPG ou WEBP</small></label></div>
+      <div class="toggles"><label class="toggle-row"><input id="layoutActive" type="checkbox" checked><span><strong>Ativo</strong><small>Exibir no site público</small></span></label><label class="toggle-row"><input id="layoutFeatured" type="checkbox"><span><strong>Destaque</strong><small>Mostrar como recomendado</small></span></label></div>
+      <div class="form-actions"><button type="button" class="secondary" id="btnCancel">Cancelar</button><button class="primary" type="submit" id="btnSave">Salvar layout</button></div>
+    </form>
+  </div></div>
+
+  <div class="confirm-backdrop" id="confirmModal" hidden><div class="confirm-card"><div class="confirm-icon">🗑️</div><h3>Excluir layout?</h3><p>Essa ação não poderá ser desfeita.</p><div><button class="secondary" id="cancelDelete">Cancelar</button><button class="danger-btn" id="confirmDelete">Excluir</button></div></div></div>
+  <div class="toast" id="toast"></div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="../supabase-config.js?v=20260826-final"></script><script src="admin.js?v=20260826-final"></script>
+</body>
+</html>
