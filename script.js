@@ -478,6 +478,43 @@ function setCurrentYear() {
   text("year", new Date().getFullYear());
 }
 
+// Mantém o conteúdo público sincronizado sem exigir F5/Atualizar manualmente.
+let publicRefreshPromise = null;
+let publicLastRefreshAt = 0;
+const PUBLIC_REFRESH_INTERVAL_MS = 45000;
+
+function refreshPublicContent({ force = false } = {}) {
+  const now = Date.now();
+  if (!force && now - publicLastRefreshAt < 2500) return publicRefreshPromise || Promise.resolve();
+  if (publicRefreshPromise) return publicRefreshPromise;
+
+  publicLastRefreshAt = now;
+  publicRefreshPromise = Promise.resolve(loadCmsAndLayouts())
+    .catch((error) => console.warn("Atualização automática não pôde ser concluída:", error))
+    .finally(() => { publicRefreshPromise = null; });
+  return publicRefreshPromise;
+}
+
+function setupAutomaticPublicRefresh() {
+  // Ao voltar para uma página restaurada pelo navegador (cache de navegação), busca os dados atuais.
+  window.addEventListener("pageshow", (event) => {
+    if (event.persisted) refreshPublicContent({ force: true });
+  });
+
+  // Ao voltar para a aba/site depois de usar o painel ou outro app, sincroniza novamente.
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) refreshPublicContent({ force: true });
+  });
+
+  // Se a internet cair e voltar, busca novamente as informações do Supabase.
+  window.addEventListener("online", () => refreshPublicContent({ force: true }));
+
+  // Enquanto a página estiver aberta e visível, verifica mudanças periodicamente.
+  window.setInterval(() => {
+    if (!document.hidden) refreshPublicContent();
+  }, PUBLIC_REFRESH_INTERVAL_MS);
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   setupMenu();
   setupBackToTop();
@@ -485,5 +522,6 @@ document.addEventListener("DOMContentLoaded", () => {
   setupLayoutImageViewer();
   syncPublicCvFilters();
   setCurrentYear();
-  loadCmsAndLayouts();
+  setupAutomaticPublicRefresh();
+  refreshPublicContent({ force: true });
 });
