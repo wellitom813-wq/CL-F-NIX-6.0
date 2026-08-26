@@ -17,7 +17,7 @@
     hero_background_url:'',family_background_url:'',
     link_clan_url:'https://link.clashofclans.com/pt?action=OpenClanProfile&tag=VJ8GGLR8',link_clan_label:'VER CLÃ',link_clan_text:'Acesse o nosso Clã diretamente no jogo.',link_clan_cta:'ACESSAR AGORA →',
     link_group_url:'https://chat.whatsapp.com/FJ7RJlbYxWT6wyPDNKk0GF',link_group_label:'GRUPO OFICIAL',link_group_text:'Entre no grupo oficial do Clã Fênix.',link_group_cta:'ENTRAR AGORA →',
-    link_store_url:'https://share.google/AG0Ovqpu2czuGmoJt',link_store_label:'LOJA OFICIAL',link_store_text:'Apoie o jogo acessando a loja oficial.',link_store_cta:'ACESSAR LOJA →',
+    link_store_url:'https://store.supercell.com/pt/clashofclans',link_store_label:'LOJA OFICIAL',link_store_text:'Apoie o jogo acessando a loja oficial.',link_store_cta:'ACESSAR LOJA →',
     mission_icon:'🦅',mission_kicker:'⭐ NOSSA MISSÃO',mission_title:'Uma família forte, organizada e respeitada.',mission_text:'Construir uma família forte, organizada e respeitada, oferecendo um ambiente competitivo, divertido e acolhedor para todos os membros.',
     resources_kicker:'⚔️ O QUE VOCÊ ENCONTRA AQUI',resources_title:'Um portal feito para a Família Fênix',resources_subtitle:'Organização, conteúdo e ferramentas para acompanhar o clã em um só lugar.',resources:DEFAULT_RESOURCES,
     layouts_kicker:'🏰 ARSENAL DE BASES',layouts_title:'Layouts do Clã Fênix',layouts_subtitle:'Escolha seu Centro de Vila, encontre uma base e abra o link diretamente no Clash of Clans.',values_kicker:'🏆 NOSSOS VALORES',values_title:'O que mantém a Fênix de pé',values:DEFAULT_VALUES,
@@ -42,9 +42,22 @@
 
   // -------- Navegação do painel --------
   const titles={overview:'Visão geral',home:'Página inicial',links:'Links oficiais',content:'Missão e conteúdo',appearance:'Aparência',layouts:'Layouts'};
-  function openView(name){document.querySelectorAll('[data-view-panel]').forEach(p=>{p.hidden=p.dataset.viewPanel!==name;p.classList.toggle('active',p.dataset.viewPanel===name);});document.querySelectorAll('.sidebar [data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===name));$('pageTitle').textContent=titles[name]||'Painel';$('sidebar').classList.remove('open');window.scrollTo({top:0,behavior:'smooth'});}
+  function openView(name){document.querySelectorAll('[data-view-panel]').forEach(p=>{p.hidden=p.dataset.viewPanel!==name;p.classList.toggle('active',p.dataset.viewPanel===name);});document.querySelectorAll('.sidebar [data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===name));$('pageTitle').textContent=titles[name]||'Painel';closeSidebar();window.scrollTo({top:0,behavior:'smooth'});}
   document.addEventListener('click',e=>{const btn=e.target.closest('[data-view]');if(btn&&!btn.closest('[data-view-panel] form')){const name=btn.dataset.view;if(titles[name])openView(name);}});
-  $('menuBtn').onclick=()=>$('sidebar').classList.toggle('open');
+  const sidebarBackdrop=$('adminSidebarBackdrop');
+  function closeSidebar(){
+    $('sidebar').classList.remove('open');
+    if(sidebarBackdrop){sidebarBackdrop.classList.remove('show');sidebarBackdrop.hidden=true;sidebarBackdrop.setAttribute('aria-hidden','true');}
+  }
+  function toggleSidebar(){
+    const opening=!$('sidebar').classList.contains('open');
+    $('sidebar').classList.toggle('open',opening);
+    if(sidebarBackdrop){sidebarBackdrop.hidden=!opening;sidebarBackdrop.classList.toggle('show',opening);sidebarBackdrop.setAttribute('aria-hidden',opening?'false':'true');}
+  }
+  $('menuBtn').onclick=toggleSidebar;
+  sidebarBackdrop?.addEventListener('click',closeSidebar);
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSidebar();if(!modal.hidden)closeModal();if(!confirmModal.hidden){confirmModal.hidden=true;deleteTarget=null;}}});
+  window.addEventListener('resize',()=>{if(window.innerWidth>760)closeSidebar();},{passive:true});
 
   // -------- Configuração do site --------
   async function loadConfig(){
@@ -64,7 +77,7 @@
     setColor('Primary',c.primary_color);setColor('Accent',c.accent_color);setColor('Background',c.background_color);setChecked('showHero',c.show_hero);setChecked('showQuickLinks',c.show_quick_links);setChecked('showMission',c.show_mission);setChecked('showResources',c.show_resources);setChecked('showLayouts',c.show_layouts);setChecked('showValues',c.show_values);setChecked('showFamily',c.show_family);updateAssetPreviews();
   }
   async function saveConfig(patch,msg='Alterações salvas!'){
-    if(!cmsReady){toast('Execute primeiro o cms-upgrade.sql no Supabase.');return false;}
+    if(!cmsReady){toast('A configuração do CMS não está disponível no Supabase.');return false;}
     const payload={...patch,updated_at:new Date().toISOString()};const {data,error}=await sb.from('site_config').update(payload).eq('id',1).select().single();if(error){console.error(error);toast(error.message||'Erro ao salvar.');return false;}siteConfig={...siteConfig,...data};toast(msg);return true;
   }
   function wireForm(id,collector,msg){$(id).addEventListener('submit',async e=>{e.preventDefault();const btn=e.submitter;if(btn){btn.disabled=true;btn.textContent='Salvando...';}await saveConfig(collector(),msg);if(btn){btn.disabled=false;btn.textContent=btn.dataset.original||({homeForm:'Salvar alterações',linksForm:'Salvar links',contentForm:'Salvar conteúdo',appearanceForm:'Salvar aparência'}[id]||'Salvar');}});}
@@ -96,7 +109,7 @@
   previewBackground($('cfgHeroBgFile'),'heroBgPreview');previewBackground($('cfgFamilyBgFile'),'familyBgPreview');
   async function uploadSiteAsset(file,prefix){if(!file)return null;if(file.size>8*1024*1024)throw new Error('A imagem deve ter no máximo 8 MB.');const ext=(file.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'');const path=`${prefix}/${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext}`;const {error}=await sb.storage.from('site-assets').upload(path,file,{cacheControl:'3600',upsert:false});if(error)throw error;const {data}=sb.storage.from('site-assets').getPublicUrl(path);return data.publicUrl;}
   $('appearanceForm').addEventListener('submit',async e=>{
-    e.preventDefault();if(!cmsReady){toast('Execute primeiro o cms-upgrade.sql no Supabase.');return;}const btn=e.submitter;btn.disabled=true;btn.textContent='Enviando...';
+    e.preventDefault();if(!cmsReady){toast('A configuração do CMS não está disponível no Supabase.');return;}const btn=e.submitter;btn.disabled=true;btn.textContent='Enviando...';
     try{
       let hero_background_url=siteConfig.hero_background_url,family_background_url=siteConfig.family_background_url;
       const heroFile=$('cfgHeroBgFile').files[0],familyFile=$('cfgFamilyBgFile').files[0];
@@ -320,7 +333,7 @@
   function openModal(item=null){layoutForm.reset();$('layoutId').value=item?.id||'';$('currentImageUrl').value=item?.imagem_url||'';$('currentImagePath').value=item?.imagem_path||'';$('modalTitle').textContent=item?'Editar layout':'Adicionar layout';$('layoutCv').value=String(item?.cv||12);$('layoutOrder').value=item?.ordem??0;setValue('layoutDescription',item?.descricao||'');setValue('layoutLink',item?.link_layout||'');$('layoutActive').checked=item?.ativo??true;$('layoutFeatured').checked=item?.destaque??false;setPreview(item?.imagem_url||'',item?.cv||12);modal.hidden=false;}
   function closeModal(){modal.hidden=true;$('layoutImage').value='';}
   function setPreview(url,cv){$('imagePreview').innerHTML=url?`<img src="${esc(url)}" alt="Prévia">`:`<span>🖼️</span><small>Prévia da imagem • CV${cv}</small>`;}
-  $('btnNewTop').onclick=()=>openModal();$('btnNewSidebar').onclick=()=>{openView('layouts');openModal();};$('btnCloseModal').onclick=closeModal;$('btnCancel').onclick=closeModal;$('adminSearch').oninput=renderLayouts;$('adminCvFilter').onchange=renderLayouts;$('layoutCv').onchange=e=>{if(!$('currentImageUrl').value&&!$('layoutImage').files[0])setPreview('',e.target.value);};$('layoutImage').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>setPreview(r.result,$('layoutCv').value);r.readAsDataURL(f);};
+  $('btnNewTop').onclick=()=>openModal();$('btnNewSidebar').onclick=()=>{openView('layouts');openModal();};$('btnCloseModal').onclick=closeModal;$('btnCancel').onclick=closeModal;modal.addEventListener('click',e=>{if(e.target===modal)closeModal();});confirmModal.addEventListener('click',e=>{if(e.target===confirmModal){confirmModal.hidden=true;deleteTarget=null;}});$('adminSearch').oninput=renderLayouts;$('adminCvFilter').onchange=renderLayouts;$('layoutCv').onchange=e=>{if(!$('currentImageUrl').value&&!$('layoutImage').files[0])setPreview('',e.target.value);};$('layoutImage').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>setPreview(r.result,$('layoutCv').value);r.readAsDataURL(f);};
   listEl.addEventListener('click',async e=>{const edit=e.target.closest('[data-edit]');if(edit){const item=layouts.find(x=>String(x.id)===edit.dataset.edit);if(item)openModal(item);return;}const tog=e.target.closest('[data-toggle]');if(tog){const item=layouts.find(x=>String(x.id)===tog.dataset.toggle);if(!item)return;const {error}=await sb.from('layouts').update({ativo:!item.ativo,atualizado_em:new Date().toISOString()}).eq('id',item.id);if(error)toast('Erro ao alterar status.');else{toast(item.ativo?'Layout ocultado.':'Layout ativado.');await loadLayouts();}return;}const del=e.target.closest('[data-delete]');if(del){deleteTarget=layouts.find(x=>String(x.id)===del.dataset.delete)||null;if(deleteTarget)confirmModal.hidden=false;}});
   $('cancelDelete').onclick=()=>{confirmModal.hidden=true;deleteTarget=null;};$('confirmDelete').onclick=async()=>{if(!deleteTarget)return;const target=deleteTarget;const {error}=await sb.from('layouts').delete().eq('id',target.id);if(error){toast('Erro ao excluir layout.');return;}if(target.imagem_path)await sb.storage.from('layouts').remove([target.imagem_path]);confirmModal.hidden=true;deleteTarget=null;toast('Layout excluído.');await loadLayouts();};
   async function uploadLayoutImage(file,cv){if(!file)return null;if(file.size>8*1024*1024)throw new Error('A imagem deve ter no máximo 8 MB.');const ext=(file.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'');const path=`cv${cv}/${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext}`;const {error}=await sb.storage.from('layouts').upload(path,file,{cacheControl:'3600',upsert:false});if(error)throw error;const {data}=sb.storage.from('layouts').getPublicUrl(path);return {url:data.publicUrl,path};}

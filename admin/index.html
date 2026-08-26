@@ -16,7 +16,7 @@
       <div class="login-logo admin-monogram" aria-hidden="true">F</div>
       <span class="kicker">ACESSO RESTRITO</span><h1>Painel Fênix</h1>
       <p>Gerencie o site inteiro e todos os layouts em um só lugar.</p>
-      <form id="loginForm"><label>E-mail<input id="loginEmail" type="email" required placeholder="Seu e-mail"></label><label>Senha<input id="loginPassword" type="password" required placeholder="Sua senha"></label><button class="primary full" type="submit">Entrar</button></form>
+      <form id="loginForm"><label>E-mail<input id="loginEmail" type="email" required autocomplete="email" inputmode="email" placeholder="Seu e-mail"></label><label>Senha<input id="loginPassword" type="password" required autocomplete="current-password" placeholder="Sua senha"></label><button class="primary full" type="submit">Entrar</button></form>
       <div class="login-message" id="loginMessage"></div><a class="back-link" href="../">← Voltar para o site</a>
     </div>
   </section>
@@ -36,6 +36,7 @@
       </nav>
       <div class="side-bottom"><button class="nav-item danger" id="btnLogout">⇥ <span>Sair</span></button></div>
     </aside>
+    <div class="sidebar-backdrop" id="adminSidebarBackdrop" hidden aria-hidden="true"></div>
 
     <main class="admin-main">
       <header class="admin-top">
@@ -53,7 +54,7 @@
           <button data-view="appearance"><span>🎨</span><strong>Mudar aparência</strong><small>Imagens, cores e seções</small></button>
           <button data-view="layouts"><span>🛡️</span><strong>Gerenciar layouts</strong><small>Galerias e importação automática</small></button>
         </div>
-        <div class="notice" id="cmsNotice" hidden><strong>⚠️ Falta ativar o CMS no Supabase</strong><p>Verifique no Supabase se a tabela <b>site_config</b> e as permissões do painel estão ativas. Depois atualize esta página.</p></div>
+        <div class="notice" id="cmsNotice" hidden><strong>⚠️ Falta ativar o CMS no Supabase</strong><p>A tabela <b>site_config</b> ou as permissões do painel não estão disponíveis. Verifique o projeto Supabase e atualize esta página.</p></div>
       </section>
 
       <section class="view" data-view-panel="home" hidden>
@@ -186,6 +187,6 @@
 
   <div class="confirm-backdrop" id="confirmModal" hidden><div class="confirm-card"><div class="confirm-icon">🗑️</div><h3>Excluir layout?</h3><p>Essa ação não poderá ser desfeita.</p><div><button class="secondary" id="cancelDelete">Cancelar</button><button class="danger-btn" id="confirmDelete">Excluir</button></div></div></div>
   <div class="toast" id="toast"></div>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="../supabase-config.js?v=20260826-final"></script><script src="admin.js?v=20260826-final"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="../supabase-config.js?v=20260826-publicacao-final"></script><script src="admin.js?v=20260826-publicacao-final"></script>
 </body>
 </html>
