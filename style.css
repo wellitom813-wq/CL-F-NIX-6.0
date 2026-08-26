@@ -121,160 +121,12 @@ img{display:block;max-width:100%}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
 
 
-/* ===== Tema clássico vermelho (restaurado) ===== */
-:root{
-  --bg:#070605;
-  --bg-2:#0c0908;
-  --panel:#120a08;
-  --panel-2:#180c09;
-  --panel-3:#22100b;
-  --text:#fff7f4;
-  --muted:#bea9a0;
-  --soft:#e1c3b4;
-  --primary:#d83a1e;
-  --primary-2:#f05a27;
-  --accent:#f2ad22;
-  --accent-2:#ffd264;
-  --line:rgba(240,86,38,.17);
-  --line-strong:rgba(240,86,38,.34);
-  --glow:rgba(240,86,38,.20);
-}
-body{
-  background:
-    radial-gradient(circle at 82% -5%,rgba(216,58,30,.16),transparent 26%),
-    radial-gradient(circle at 12% 20%,rgba(242,173,34,.08),transparent 22%),
-    linear-gradient(180deg,#070605 0%,#090605 48%,#050404 100%);
-}
-::selection{background:rgba(240,86,38,.28);color:#fff}
-.skip-link{background:var(--primary);color:#fff}
-.site-header{background:rgba(8,6,5,.9)}
-.brand-copy small,.eyebrow,.quick-content small,.footer-brand span,.footer-links a:hover{color:var(--accent)}
-.main-nav .nav-highlight,.btn-primary{
-  color:#fff;
-  background:linear-gradient(180deg,var(--primary-2),var(--primary));
-  border-color:rgba(255,199,126,.4);
-  box-shadow:0 14px 36px rgba(216,58,30,.22);
-}
-.menu-toggle span{background:#ffd97a}
-.hero::after{
-  background:linear-gradient(90deg,rgba(7,6,5,.99) 0%,rgba(7,6,5,.94) 42%,rgba(7,6,5,.58) 72%,rgba(7,6,5,.82) 100%),
-             radial-gradient(circle at 76% 46%,rgba(216,58,30,.22),transparent 30%),
-             linear-gradient(145deg,#140907,#070605 58%,#200b08);
-}
-.hero-noise{background-image:linear-gradient(rgba(240,86,38,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(240,86,38,.05) 1px,transparent 1px)}
-.hero-overline{color:#d8b8ab}
-.hero h1 em{background:linear-gradient(180deg,#ffd888 0%,#f3912c 52%,#cd2d1b 100%);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:0 10px 45px rgba(216,58,30,.12)}
-.hero-slogan{color:#d4b7ab}.slogan-dot{background:var(--primary);box-shadow:0 0 16px var(--primary)}
-.hero-orbit{border-color:rgba(240,86,38,.18)}
-.orbit-one{box-shadow:inset 0 0 80px rgba(216,58,30,.06)}
-.hero-logo-card{width:min(360px,88vw);padding:14px;border-radius:36px;background:linear-gradient(180deg,rgba(21,10,8,.82),rgba(10,6,5,.95));box-shadow:0 30px 100px rgba(0,0,0,.55),0 0 70px rgba(216,58,30,.12)}
-.hero-logo-card::before{content:none}
-.hero-crown{display:none}
-.hero-monogram,.brand-mark,.recruitment-mark,.not-found-mark span{
-  font-family:Montserrat,sans-serif;
-  font-weight:900;
-  color:#fff;
-  text-shadow:none;
-}
-.brand-mark{
-  position:relative;isolation:isolate;overflow:hidden;
-  background:#bf2614;border:none;color:#fff;box-shadow:0 12px 30px rgba(216,58,30,.25), inset 0 1px 0 rgba(255,255,255,.08);
-}
-.brand-mark::before{
-  content:"";position:absolute;inset:5px;border-radius:11px;border:3px solid #f3b528;z-index:-1;
-}
-.brand-mark::after{
-  content:"";position:absolute;left:50%;top:50%;width:18px;height:18px;background:#ea4d1d;transform:translate(-50%,-50%) rotate(45deg);z-index:-2;
-}
-.brand-mark.small::before{inset:4px;border-radius:9px;border-width:3px}
-.brand-mark.small::after{width:16px;height:16px}
-.hero-monogram{
-  position:relative;isolation:isolate;overflow:hidden;
-  width:100%;aspect-ratio:1;border-radius:34px;display:grid;place-items:center;font-size:clamp(120px,14vw,186px);line-height:1;
-  background:#bf2614;border:none;color:#fff;box-shadow:0 24px 60px rgba(0,0,0,.3),0 0 0 2px rgba(255,255,255,.02) inset;
-}
-.hero-monogram::before{
-  content:"";position:absolute;inset:20px;border-radius:28px;border:7px solid #f3b528;z-index:-1;
-}
-.hero-monogram::after{
-  content:"";position:absolute;left:50%;top:50%;width:42%;height:42%;background:#ea4d1d;transform:translate(-50%,-50%) rotate(45deg);z-index:-2;
-}
-.hero-logo-caption strong{color:#fff}.hero-logo-caption span{color:#b99a8d}
-.quick-card,.feature-card,.value-pill,.split-card,.mission-card,.premium-panel,.layouts-shell,.recruitment-card{border-color:var(--line)}
-.quick-card:hover,.feature-card:hover{box-shadow:0 22px 50px rgba(0,0,0,.35),0 0 32px rgba(216,58,30,.08)}
-.quick-icon,.feature-card>span,.mission-icon{border-color:var(--line);background:radial-gradient(circle at 30% 20%,rgba(240,86,38,.18),rgba(255,255,255,.02))}
-.filter-btn{border-color:rgba(240,86,38,.18);background:linear-gradient(145deg,#19100d,#0f0908)}
-.filter-btn:hover{border-color:var(--line-strong)}
-.filter-btn.active{color:#fff;border-color:rgba(255,210,100,.38);background:linear-gradient(180deg,var(--primary-2),var(--primary));box-shadow:0 0 0 2px rgba(240,86,38,.08),0 0 28px rgba(216,58,30,.20)}
-.layout-card{border-color:rgba(240,86,38,.15);background:linear-gradient(160deg,#17100d,#0c0908)}
-.layout-card:hover{box-shadow:0 22px 55px rgba(0,0,0,.32),0 0 30px rgba(216,58,30,.08)}
-.layout-thumb{background:radial-gradient(circle,rgba(240,86,38,.08),#090806);color:#d7b8a4}
-.layout-number{background:linear-gradient(180deg,#ff6a39,#cc2f1c);color:#fff}
-.layout-badge{background:rgba(240,86,38,.08);border-color:rgba(240,86,38,.14);color:#ffd28e}
-.btn-visualize:hover{background:#17100d}
-.layouts-tip strong,.recruitment-card blockquote,.main-nav a:hover,.main-nav a:focus-visible,.footer-links a:hover{color:#ffd264}
-.recruitment-card blockquote{border-left-color:var(--primary)}
-.recruitment-emblem{width:152px;height:152px;padding:0;border-radius:34px;background:transparent;box-shadow:none}
-.recruitment-mark{position:relative;isolation:isolate;overflow:hidden;width:100%;height:100%;border-radius:34px;display:grid;place-items:center;font-size:70px;background:#bf2614;border:none;color:#fff;box-shadow:0 22px 50px rgba(0,0,0,.26),0 0 26px rgba(216,58,30,.16)}
-.recruitment-mark::before{content:"";position:absolute;inset:14px;border-radius:27px;border:5px solid #f3b528;z-index:-1}
-.recruitment-mark::after{content:"";position:absolute;left:50%;top:50%;width:34%;height:34%;background:#ea4d1d;transform:translate(-50%,-50%) rotate(45deg);z-index:-2}
-.back-to-top{color:#ffd264}
-@media(max-width:780px){
-  .hero-monogram{border-radius:28px}
-  .hero-monogram::before{inset:16px;border-radius:22px;border-width:6px}
-  .recruitment-emblem{width:116px;height:116px}
-  .recruitment-mark{border-radius:26px}
-  .recruitment-mark::before{inset:11px;border-radius:20px;border-width:4px}
-}
-
-
-/* ===== Identidade original Clã Fênix — vermelho ===== */
-.brand-mark,
-.brand-mark.small,
-.hero-monogram{
-  background-image:url("assets/fenix-f.png")!important;
-  background-position:center!important;
-  background-size:cover!important;
-  background-repeat:no-repeat!important;
-  color:transparent!important;
-  text-shadow:none!important;
-  overflow:hidden;
-}
-.brand-mark{border:1px solid rgba(223,75,29,.38)!important;box-shadow:0 10px 28px rgba(184,44,21,.20)!important}
-.hero-monogram{
-  border-radius:26%!important;
-  border:0!important;
-  box-shadow:0 20px 60px rgba(0,0,0,.38),0 0 48px rgba(223,75,29,.16)!important;
-}
-.hero-logo-card{
-  background:radial-gradient(circle,rgba(223,75,29,.13),rgba(8,7,5,.80) 68%)!important;
-  box-shadow:0 30px 100px rgba(0,0,0,.55),0 0 70px rgba(223,75,29,.12)!important;
-}
-.hero-logo-card::before{
-  background:linear-gradient(145deg,#ef5d35,rgba(184,44,21,.18),#7a1a0e)!important;
-}
-.hero-crown,.hero-logo-caption strong{color:#ef5a32!important}
-.nav-highlight,.btn-primary{
-  color:#fff!important;
-  background:linear-gradient(180deg,#e9532a,#b82c15)!important;
-  border-color:rgba(239,90,50,.62)!important;
-  box-shadow:0 12px 32px rgba(184,44,21,.24)!important;
-}
-.nav-highlight:hover,.btn-primary:hover{box-shadow:0 16px 42px rgba(223,75,29,.30)!important}
-.layout-number{
-  background:linear-gradient(180deg,#ef5a31,#b82c15)!important;
-  color:#fff!important;
-}
-.skip-link{background:#df4b1d!important;color:#fff!important}
-::selection{background:rgba(223,75,29,.28)!important;color:#fff}
-
-
-/* ===== Ajuste final solicitado: vermelho original, sem tema dourado ===== */
+/* ===== PUBLICAÇÃO FINAL — identidade vermelha, sem tema dourado ===== */
 :root{
   --bg:#080705;
   --bg-2:#0c0807;
   --panel:#100a08;
-  --panel-2:#170b08;
+  --panel-2:#160b08;
   --panel-3:#21100b;
   --text:#fffafa;
   --muted:#b5a5a0;
@@ -287,57 +139,108 @@ body{
   --line-strong:rgba(223,75,29,.36);
   --glow:rgba(223,75,29,.22);
 }
-body{
-  background:
-    radial-gradient(circle at 82% -5%,rgba(184,44,21,.17),transparent 27%),
-    radial-gradient(circle at 12% 20%,rgba(223,75,29,.09),transparent 22%),
-    linear-gradient(180deg,#080705 0%,#0a0605 48%,#050404 100%)!important;
+
+button,a{touch-action:manipulation}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{
+  outline:2px solid #f05a2b;
+  outline-offset:3px;
 }
-.site-header{background:rgba(8,7,5,.92)!important}
-.menu-toggle span{background:#ef5a32!important}
-.hero::after{
-  background:
-    linear-gradient(90deg,rgba(8,7,5,.99) 0%,rgba(8,7,5,.94) 42%,rgba(8,7,5,.58) 72%,rgba(8,7,5,.84) 100%),
-    radial-gradient(circle at 76% 46%,rgba(223,75,29,.23),transparent 30%),
-    linear-gradient(145deg,#160805,#080705 58%,#240a06)!important;
+
+/* Símbolo oficial enviado pelo proprietário do site */
+.brand-mark,.hero-monogram,.recruitment-mark,.mission-mark{
+  display:block;
+  object-fit:contain;
+  background:none;
+  color:transparent;
+  text-shadow:none;
+  border:0;
 }
-.hero-noise{
-  background-image:
-    linear-gradient(rgba(223,75,29,.05) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(223,75,29,.05) 1px,transparent 1px)!important;
+.brand-mark{
+  flex:0 0 auto;
+  width:45px;
+  height:45px;
+  border-radius:14px;
+  box-shadow:0 10px 28px rgba(184,44,21,.18);
 }
-.hero h1 em{
-  background:linear-gradient(180deg,#ff9a78 0%,#ef5a2c 50%,#b82c15 100%)!important;
-  -webkit-background-clip:text!important;
-  background-clip:text!important;
-  color:transparent!important;
-  text-shadow:0 10px 45px rgba(184,44,21,.14)!important;
+.brand-mark.small{width:40px;height:40px;border-radius:12px}
+.hero-logo-card{
+  width:min(390px,88vw);
+  padding:14px;
+  border-radius:36px;
+  background:radial-gradient(circle at 50% 42%,rgba(223,75,29,.13),rgba(8,7,5,.84) 72%);
+  box-shadow:0 30px 100px rgba(0,0,0,.55),0 0 70px rgba(223,75,29,.12);
 }
-.brand-copy small,.eyebrow,.quick-content small,.footer-brand span,
-.layouts-tip strong,.recruitment-card blockquote,.main-nav a:hover,
-.main-nav a:focus-visible,.footer-links a:hover,.back-to-top{
-  color:#ef5a32!important;
+.hero-logo-card::before{
+  border-radius:36px;
+  background:linear-gradient(145deg,#ef5d35,rgba(184,44,21,.18),#7a1a0e);
 }
-.filter-btn.active{
-  color:#fff!important;
-  border-color:rgba(223,75,29,.46)!important;
-  background:linear-gradient(180deg,#df4b1d,#b82c15)!important;
-  box-shadow:0 0 0 2px rgba(223,75,29,.09),0 0 28px rgba(184,44,21,.22)!important;
+.hero-monogram{
+  width:100%;
+  aspect-ratio:1;
+  border-radius:26%;
+  box-shadow:0 24px 65px rgba(0,0,0,.28),0 0 38px rgba(223,75,29,.10);
 }
-.layout-badge{
-  background:rgba(223,75,29,.10)!important;
-  border-color:rgba(223,75,29,.16)!important;
-  color:#f0b7a8!important;
+.hero-crown{display:none!important}
+.hero-logo-caption strong{color:#ef5a32}
+.hero-logo-caption span{color:#a99690}
+.mission-mark{
+  width:100px;
+  height:100px;
+  opacity:.14;
+  justify-self:end;
+  filter:saturate(.95);
 }
-.brand-mark::before,.brand-mark::after,
-.hero-monogram::before,.hero-monogram::after,
-.recruitment-mark::before,.recruitment-mark::after{display:none!important}
+.recruitment-emblem{
+  width:150px;
+  height:150px;
+  padding:0;
+  border-radius:34px;
+  background:transparent;
+  box-shadow:none;
+}
 .recruitment-mark{
-  background-image:url("assets/fenix-f.png")!important;
-  background-position:center!important;
-  background-size:cover!important;
-  background-repeat:no-repeat!important;
-  color:transparent!important;
-  text-shadow:none!important;
-  border:1px solid rgba(223,75,29,.34)!important;
+  width:100%;
+  height:100%;
+  border-radius:26%;
+  box-shadow:0 22px 50px rgba(0,0,0,.28),0 0 30px rgba(223,75,29,.12);
 }
+
+/* Menu móvel sem desfoque e com área clicável garantida */
+@media(max-width:780px){
+  .site-header{
+    background:#080705;
+    backdrop-filter:none;
+    -webkit-backdrop-filter:none;
+  }
+  .main-nav{
+    z-index:3300;
+    background:#0b0807;
+    backdrop-filter:none;
+    -webkit-backdrop-filter:none;
+    isolation:isolate;
+  }
+  .main-nav.open{pointer-events:auto}
+  .main-nav a{position:relative;z-index:1}
+  .menu-backdrop{
+    z-index:3100;
+    background:rgba(0,0,0,.76);
+    backdrop-filter:none;
+    -webkit-backdrop-filter:none;
+  }
+  .brand-mark{width:41px;height:41px;border-radius:13px}
+  .hero-logo-card{width:min(300px,78vw);border-radius:30px}
+  .hero-logo-card::before{border-radius:30px}
+  .mission-mark{display:none}
+  .recruitment-emblem{width:110px;height:110px}
+}
+
+/* Layouts: duas bases por linha no celular, mantendo leitura e toque */
+@media(max-width:430px){
+  .layouts-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+  .layout-card{min-width:0}
+  .layout-thumb{aspect-ratio:1.14/1}
+  .layout-actions .btn{white-space:normal;line-height:1.12;padding:5px 3px}
+}
+
+/* Evita que qualquer overlay decorativo capture cliques */
+.hero-noise,.hero-orbit,.layouts-shell::before{pointer-events:none}

@@ -69,33 +69,51 @@ function setupMenu() {
   const backdrop = $("menuBackdrop");
   if (!toggle || !nav) return;
 
-  const close = () => {
+  let lastFocused = null;
+  const links = [...nav.querySelectorAll("a")];
+
+  const close = ({ restoreFocus = false } = {}) => {
     nav.classList.remove("open");
     toggle.classList.remove("active");
     toggle.setAttribute("aria-expanded", "false");
+    toggle.setAttribute("aria-label", "Abrir menu");
     document.body.classList.remove("menu-open");
     if (backdrop) {
       backdrop.classList.remove("show");
       backdrop.setAttribute("aria-hidden", "true");
     }
+    if (restoreFocus && lastFocused && document.contains(lastFocused)) {
+      lastFocused.focus({ preventScroll: true });
+    }
   };
 
   const open = () => {
+    lastFocused = document.activeElement;
     nav.classList.add("open");
     toggle.classList.add("active");
     toggle.setAttribute("aria-expanded", "true");
+    toggle.setAttribute("aria-label", "Fechar menu");
     document.body.classList.add("menu-open");
     if (backdrop) {
       backdrop.classList.add("show");
       backdrop.setAttribute("aria-hidden", "false");
     }
+    requestAnimationFrame(() => links[0]?.focus({ preventScroll: true }));
   };
 
-  toggle.addEventListener("click", () => nav.classList.contains("open") ? close() : open());
-  nav.querySelectorAll("a").forEach((link) => link.addEventListener("click", close));
-  backdrop?.addEventListener("click", close);
-  document.addEventListener("keydown", (event) => { if (event.key === "Escape") close(); });
-  window.addEventListener("resize", () => { if (window.innerWidth > 780) close(); });
+  toggle.addEventListener("click", (event) => {
+    event.preventDefault();
+    nav.classList.contains("open") ? close() : open();
+  });
+  links.forEach((link) => link.addEventListener("click", () => close()));
+  document.querySelector(".brand")?.addEventListener("click", () => close());
+  backdrop?.addEventListener("click", () => close({ restoreFocus: true }));
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && nav.classList.contains("open")) close({ restoreFocus: true });
+  });
+  window.addEventListener("resize", () => {
+    if (window.innerWidth > 780 && nav.classList.contains("open")) close();
+  }, { passive: true });
 }
 
 function setupBackToTop() {
