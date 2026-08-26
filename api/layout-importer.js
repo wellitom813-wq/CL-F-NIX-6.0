@@ -240,19 +240,14 @@ async function copyImageToStorage(candidate,token){
   }
 }
 
-async function approveCandidate(id,token){
+async function approveCandidate(id,token,forceDuplicate=false){
   const rows=await rest(`layout_import_candidates?id=eq.${encodeURIComponent(id)}&select=*&limit=1`,{token});
   const candidate=rows?.[0];
   if(!candidate)throw new Error('Layout pendente não encontrado.');
 
-  const duplicates=await rest(`layouts?link_layout=eq.${encodeURIComponent(candidate.clash_link)}&select=id&limit=1`,{token});
-  if(duplicates?.length){
-    await rest(`layout_import_candidates?id=eq.${encodeURIComponent(id)}`,{
-      token,method:'PATCH',
-      body:{status:'approved',reviewed_at:new Date().toISOString()},
-      prefer:'return=minimal'
-    });
-    return {ok:true,duplicate:true};
+  const duplicates=await rest(`layouts?link_layout=eq.${encodeURIComponent(candidate.clash_link)}&select=id,cv,nome,link_layout&limit=1`,{token});
+  if(duplicates?.length&&!forceDuplicate){
+    return {ok:true,duplicate:true,needsConfirmation:true,duplicateLayout:duplicates[0]};
   }
 
   const image=await copyImageToStorage(candidate,token);
@@ -280,7 +275,7 @@ async function approveCandidate(id,token){
     prefer:'return=minimal'
   });
 
-  return {ok:true,duplicate:false};
+  return {ok:true,duplicate:!!duplicates?.length,forcedDuplicate:!!duplicates?.length&&!!forceDuplicate};
 }
 
 module.exports = async function handler(req,res){
@@ -306,7 +301,7 @@ module.exports = async function handler(req,res){
     if(action==='scan')return json(res,200,await runScan(token));
     if(action==='approve'){
       if(!body.id)return json(res,400,{error:'ID do layout ausente.'});
-      return json(res,200,await approveCandidate(body.id,token));
+      return json(res,200,await approveCandidate(body.id,token,body.forceDuplicate===true));
     }
 
     return json(res,400,{error:'Ação inválida.'});
