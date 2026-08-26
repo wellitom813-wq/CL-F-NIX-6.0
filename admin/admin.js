@@ -22,7 +22,7 @@
     resources_kicker:'⚔️ O QUE VOCÊ ENCONTRA AQUI',resources_title:'Um portal feito para a Família Fênix',resources_subtitle:'Organização, conteúdo e ferramentas para acompanhar o clã em um só lugar.',resources:DEFAULT_RESOURCES,
     layouts_kicker:'🏰 ARSENAL DE BASES',layouts_title:'Layouts do Clã Fênix',layouts_subtitle:'Escolha seu Centro de Vila, encontre uma base e abra o link diretamente no Clash of Clans.',values_kicker:'🏆 NOSSOS VALORES',values_title:'O que mantém a Fênix de pé',values:DEFAULT_VALUES,
     family_kicker:'🚀 FAÇA PARTE DA FAMÍLIA FÊNIX',family_title:'Junte-se ao nosso exército.',family_text:'Junte-se ao nosso exército e evolua ao lado de jogadores dedicados. Aqui cada batalha fortalece nossa história e cada vitória nos aproxima da grandeza.',family_quote:'“Das cinzas renascemos mais fortes.”',family_cta:'ENTRAR NO CLÃ →',
-    primary_color:'#b77a18',accent_color:'#f2c767',background_color:'#070706',show_hero:true,show_quick_links:true,show_mission:true,show_resources:true,show_layouts:true,show_values:true,show_family:true
+    primary_color:'#b82c15',accent_color:'#df4b1d',background_color:'#080705',show_hero:true,show_quick_links:true,show_mission:true,show_resources:true,show_layouts:true,show_values:true,show_family:true
   };
 
   const loginPage=$('loginPage'),dashboard=$('dashboard'),listEl=$('layoutList'),emptyEl=$('emptyAdmin'),modal=$('layoutModal'),layoutForm=$('layoutForm'),toastEl=$('toast'),confirmModal=$('confirmModal');
@@ -58,7 +58,10 @@
     setValue('cfgClanName',c.clan_name);setValue('cfgPortalLabel',c.portal_label);setValue('cfgSlogan',c.slogan);setValue('cfgClanTag',c.clan_tag);setValue('cfgHeroEyebrow',c.hero_eyebrow);setValue('cfgHeroTitle',c.hero_title);setValue('cfgHeroIntro',c.hero_intro);setValue('cfgHeroSecondary',c.hero_secondary);setValue('cfgLayoutsKicker',c.layouts_kicker);setValue('cfgLayoutsTitle',c.layouts_title);setValue('cfgLayoutsSubtitle',c.layouts_subtitle);
     setValue('cfgClanUrl',c.link_clan_url);setValue('cfgClanLabel',c.link_clan_label);setValue('cfgClanText',c.link_clan_text);setValue('cfgClanCta',c.link_clan_cta);setValue('cfgGroupUrl',c.link_group_url);setValue('cfgGroupLabel',c.link_group_label);setValue('cfgGroupText',c.link_group_text);setValue('cfgGroupCta',c.link_group_cta);setValue('cfgStoreUrl',c.link_store_url);setValue('cfgStoreLabel',c.link_store_label);setValue('cfgStoreText',c.link_store_text);setValue('cfgStoreCta',c.link_store_cta);
     setValue('cfgMissionIcon',c.mission_icon);setValue('cfgMissionKicker',c.mission_kicker);setValue('cfgMissionTitle',c.mission_title);setValue('cfgMissionText',c.mission_text);setValue('cfgResourcesKicker',c.resources_kicker);setValue('cfgResourcesTitle',c.resources_title);setValue('cfgResourcesSubtitle',c.resources_subtitle);setValue('cfgValuesKicker',c.values_kicker);setValue('cfgValuesTitle',c.values_title);setValue('cfgFamilyKicker',c.family_kicker);setValue('cfgFamilyTitle',c.family_title);setValue('cfgFamilyText',c.family_text);setValue('cfgFamilyQuote',c.family_quote);setValue('cfgFamilyCta',c.family_cta);renderResourceEditor();renderValuesEditor();
-    setColor('Primary',c.primary_color||'#b77a18');setColor('Accent',c.accent_color||'#f2c767');setColor('Background',c.background_color||'#070706');setChecked('showHero',c.show_hero);setChecked('showQuickLinks',c.show_quick_links);setChecked('showMission',c.show_mission);setChecked('showResources',c.show_resources);setChecked('showLayouts',c.show_layouts);setChecked('showValues',c.show_values);setChecked('showFamily',c.show_family);updateAssetPreviews();
+    c.primary_color=normalizeThemeColor('primary',c.primary_color||'#b82c15');
+    c.accent_color=normalizeThemeColor('accent',c.accent_color||'#df4b1d');
+    c.background_color=normalizeThemeColor('background',c.background_color||'#080705');
+    setColor('Primary',c.primary_color);setColor('Accent',c.accent_color);setColor('Background',c.background_color);setChecked('showHero',c.show_hero);setChecked('showQuickLinks',c.show_quick_links);setChecked('showMission',c.show_mission);setChecked('showResources',c.show_resources);setChecked('showLayouts',c.show_layouts);setChecked('showValues',c.show_values);setChecked('showFamily',c.show_family);updateAssetPreviews();
   }
   async function saveConfig(patch,msg='Alterações salvas!'){
     if(!cmsReady){toast('Execute primeiro o cms-upgrade.sql no Supabase.');return false;}
@@ -78,7 +81,14 @@
   $('resourceEditor').addEventListener('click',e=>{let arr=collectResources();const rem=e.target.closest('[data-remove-resource]'),up=e.target.closest('[data-move-up]'),down=e.target.closest('[data-move-down]');if(rem){arr.splice(+rem.dataset.removeResource,1);}else if(up){const i=+up.dataset.moveUp;if(i>0)[arr[i-1],arr[i]]=[arr[i],arr[i-1]];}else if(down){const i=+down.dataset.moveDown;if(i<arr.length-1)[arr[i+1],arr[i]]=[arr[i],arr[i+1]];}else return;siteConfig.resources=arr;renderResourceEditor();});
   $('valuesEditor').addEventListener('click',e=>{let arr=collectValues();const rem=e.target.closest('[data-remove-value]'),up=e.target.closest('[data-value-up]'),down=e.target.closest('[data-value-down]');if(rem){arr.splice(+rem.dataset.removeValue,1);}else if(up){const i=+up.dataset.valueUp;if(i>0)[arr[i-1],arr[i]]=[arr[i],arr[i-1]];}else if(down){const i=+down.dataset.valueDown;if(i<arr.length-1)[arr[i+1],arr[i]]=[arr[i],arr[i+1]];}else return;siteConfig.values=arr;renderValuesEditor();});
 
-  function setColor(name,color){const c=/^#[0-9a-f]{6}$/i.test(color)?color:'#000000';setValue(`cfg${name}Color`,c);setValue(`cfg${name}ColorText`,c);}
+  function normalizeThemeColor(kind,color){
+    const raw=String(color||'').toLowerCase();
+    if(kind==='primary' && ['#b77a18','#d83a1e'].includes(raw)) return '#b82c15';
+    if(kind==='accent' && ['#f2c767','#f2ad22'].includes(raw)) return '#df4b1d';
+    if(kind==='background' && ['#070706','#070605'].includes(raw)) return '#080705';
+    return color;
+  }
+  function setColor(name,color){const kind=({Primary:'primary',Accent:'accent',Background:'background'})[name];const normalized=normalizeThemeColor(kind,color);const c=/^#[0-9a-f]{6}$/i.test(normalized)?normalized:'#000000';setValue(`cfg${name}Color`,c);setValue(`cfg${name}ColorText`,c);}
   ['Primary','Accent','Background'].forEach(name=>{const picker=$(`cfg${name}Color`),textInput=$(`cfg${name}ColorText`);picker.addEventListener('input',()=>textInput.value=picker.value);textInput.addEventListener('input',()=>{if(/^#[0-9a-f]{6}$/i.test(textInput.value))picker.value=textInput.value;});});
   function adminAssetUrl(url){if(!url)return '';return String(url).startsWith('assets/')?`../${url}`:url;}
   function updateAssetPreviews(){const heroBg=adminAssetUrl(siteConfig.hero_background_url),familyBg=adminAssetUrl(siteConfig.family_background_url);$('heroBgPreview').style.backgroundImage=heroBg?`url("${heroBg}")`:'';$('familyBgPreview').style.backgroundImage=familyBg?`url("${familyBg}")`:'';}
