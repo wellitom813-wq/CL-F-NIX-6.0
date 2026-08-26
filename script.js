@@ -210,14 +210,26 @@ function applySiteConfig(cfg) {
   let accent = /^#[0-9a-f]{6}$/i.test(cfg.accent_color || "") ? cfg.accent_color : null;
   let bg = /^#[0-9a-f]{6}$/i.test(cfg.background_color || "") ? cfg.background_color : null;
 
-  // Migra automaticamente as antigas cores vermelhas para o novo tema dourado.
-  if (String(primary).toLowerCase() === "#d83a1e") primary = "#b77a18";
-  if (String(accent).toLowerCase() === "#f2ad22") accent = "#f2c767";
-  if (String(bg).toLowerCase() === "#070605") bg = "#070706";
+  // Mantém o tema clássico vermelho como padrão e reconverte o tema dourado anterior.
+  if (["#b77a18","#d83a1e"].includes(String(primary).toLowerCase())) primary = "#b82c15";
+  if (["#f2c767","#f2ad22"].includes(String(accent).toLowerCase())) accent = "#df4b1d";
+  if (["#070706","#070605"].includes(String(bg).toLowerCase())) bg = "#080705";
 
-  if (primary) document.documentElement.style.setProperty("--primary", primary);
+  if (primary) {
+    document.documentElement.style.setProperty("--primary", primary);
+    document.documentElement.style.setProperty("--primary-2", "#df4b1d");
+    document.documentElement.style.setProperty("--line", "rgba(223,75,29,.18)");
+    document.documentElement.style.setProperty("--line-strong", "rgba(223,75,29,.36)");
+    document.documentElement.style.setProperty("--glow", "rgba(223,75,29,.22)");
+  }
   if (accent) document.documentElement.style.setProperty("--accent", accent);
-  if (bg) document.documentElement.style.setProperty("--bg", bg);
+  if (bg) {
+    document.documentElement.style.setProperty("--bg", bg);
+    document.documentElement.style.setProperty("--bg-2", "#0c0807");
+  }
+  document.documentElement.style.setProperty("--accent-2", "#f05a2b");
+  const themeMeta = document.querySelector('meta[name="theme-color"]');
+  if (themeMeta) themeMeta.setAttribute("content", "#8d2016");
 
   const visibilityMap = [
     ["show_hero", "inicio"],
