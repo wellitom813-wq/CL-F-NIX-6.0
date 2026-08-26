@@ -1,0 +1,13 @@
+{
+  "functions": {
+    "api/layout-importer.js": {
+      "maxDuration": 60
+    }
+  },
+  "crons": [
+    {
+      "path": "/api/layout-importer?cron=1",
+      "schedule": "0 8 * * *"
+    }
+  ]
+}
