@@ -25,14 +25,65 @@
     primary_color:'#b82c15',accent_color:'#df4b1d',background_color:'#080705',show_hero:true,show_quick_links:true,show_mission:true,show_resources:true,show_layouts:true,show_values:true,show_family:true
   };
 
-  const loginPage=$('loginPage'),dashboard=$('dashboard'),listEl=$('layoutList'),emptyEl=$('emptyAdmin'),modal=$('layoutModal'),layoutForm=$('layoutForm'),toastEl=$('toast'),confirmModal=$('confirmModal');
-  let layouts=[],deleteTarget=null,siteConfig={...DEFAULT_CONFIG},cmsReady=true;
+  const loginPage=$('loginPage'),dashboard=$('dashboard'),listEl=$('layoutList'),emptyEl=$('emptyAdmin'),modal=$('layoutModal'),layoutForm=$('layoutForm'),toastEl=$('toast'),confirmModal=$('confirmModal'),duplicateModal=$('duplicateModal');
+  let layouts=[],deleteTarget=null,siteConfig={...DEFAULT_CONFIG},cmsReady=true,duplicateDecisionResolve=null;
 
   function toast(msg){toastEl.textContent=msg;toastEl.classList.add('show');clearTimeout(window.__toast);window.__toast=setTimeout(()=>toastEl.classList.remove('show'),2300);}
   function esc(v=''){return String(v).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
   function ph(cv){return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 520"><rect width="100%" height="100%" fill="#0b0907"/><text x="50%" y="48%" dominant-baseline="middle" text-anchor="middle" fill="#ff6a00" font-size="70" font-family="Arial" font-weight="700">CV${cv}</text><text x="50%" y="64%" dominant-baseline="middle" text-anchor="middle" fill="#d9d0ca" font-size="28" font-family="Arial">CLÃ FÊNIX</text></svg>`)}`;}
   function ensureConfigured(){if(sb)return true;$('loginMessage').textContent='Configure primeiro o arquivo supabase-config.js.';return false;}
   function value(id){return $(id)?.value?.trim()??'';} function checked(id){return !!$(id)?.checked;} function setValue(id,v){if($(id))$(id).value=v??'';} function setChecked(id,v){if($(id))$(id).checked=v!==false;}
+
+  // -------- Proteção contra layouts repetidos --------
+  function normalizeLayoutLink(raw=''){
+    const text=String(raw||'').trim();
+    if(!text)return '';
+    try{
+      const url=new URL(text);
+      const host=url.hostname.toLowerCase();
+      const action=(url.searchParams.get('action')||'').toLowerCase();
+      const layoutId=url.searchParams.get('id')||'';
+      // Links do Clash podem mudar o idioma (/pt, /en etc.). O ID identifica o mesmo layout.
+      if(host==='link.clashofclans.com'&&action&&layoutId)return `${host}|${action}|${layoutId}`;
+      url.hash='';
+      url.hostname=host;
+      url.searchParams.sort();
+      return url.toString().replace(/\/$/,'');
+    }catch{
+      return text.replace(/\/+$/,'');
+    }
+  }
+
+  async function findDuplicateLayoutByLink(link,ignoreId=''){
+    const target=normalizeLayoutLink(link);
+    if(!target)return null;
+    const {data,error}=await sb.from('layouts').select('id,cv,nome,link_layout,ativo');
+    if(error)throw error;
+    return (data||[]).find(item=>String(item.id)!==String(ignoreId||'')&&normalizeLayoutLink(item.link_layout)===target)||null;
+  }
+
+  function finishDuplicatePrompt(accepted){
+    if(!duplicateDecisionResolve)return;
+    const resolve=duplicateDecisionResolve;
+    duplicateDecisionResolve=null;
+    duplicateModal.hidden=true;
+    resolve(!!accepted);
+  }
+
+  function askDuplicateApproval(duplicate,{editing=false}={}){
+    if(!duplicateModal)return Promise.resolve(false);
+    const cv=duplicate?.cv?`CV${duplicate.cv}`:'outro CV';
+    const name=duplicate?.nome?` (${duplicate.nome})`:'';
+    $('duplicateText').textContent=`Este mesmo link já está cadastrado no ${cv}${name}. ${editing?'Deseja salvar esta alteração mesmo assim?':'Deseja adicionar outro layout usando o mesmo link?'}`;
+    $('confirmDuplicate').textContent=editing?'Sim, salvar mesmo assim':'Sim, adicionar mesmo assim';
+    duplicateModal.hidden=false;
+    setTimeout(()=>$('confirmDuplicate')?.focus(),0);
+    return new Promise(resolve=>{duplicateDecisionResolve=resolve;});
+  }
+
+  $('cancelDuplicate')?.addEventListener('click',()=>finishDuplicatePrompt(false));
+  $('confirmDuplicate')?.addEventListener('click',()=>finishDuplicatePrompt(true));
+  duplicateModal?.addEventListener('click',e=>{if(e.target===duplicateModal)finishDuplicatePrompt(false);});
 
   async function init(){if(!ensureConfigured())return;const {data:{session}}=await sb.auth.getSession();if(session)await showDashboard();else showLogin();sb.auth.onAuthStateChange(async(_event,session)=>session?await showDashboard():showLogin());}
   function showLogin(){loginPage.hidden=false;dashboard.hidden=true;}
@@ -56,7 +107,7 @@
   }
   $('menuBtn').onclick=toggleSidebar;
   sidebarBackdrop?.addEventListener('click',closeSidebar);
-  document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSidebar();if(!modal.hidden)closeModal();if(!confirmModal.hidden){confirmModal.hidden=true;deleteTarget=null;}}});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSidebar();if(duplicateModal&&!duplicateModal.hidden){finishDuplicatePrompt(false);return;}if(!modal.hidden)closeModal();if(!confirmModal.hidden){confirmModal.hidden=true;deleteTarget=null;}}});
   window.addEventListener('resize',()=>{if(window.innerWidth>760)closeSidebar();},{passive:true});
 
   // -------- Configuração do site --------
@@ -228,8 +279,18 @@
     const card=document.querySelector(`[data-import-id="${CSS.escape(String(id))}"]`);
     card?.classList.add('import-progress');
     try{
-      const result=await importerRequest('approve',{id});
-      if(!quiet)toast(result.duplicate?'Esse layout já estava cadastrado.':'Layout adicionado!');
+      let result=await importerRequest('approve',{id});
+      if(result.needsConfirmation&&result.duplicate){
+        card?.classList.remove('import-progress');
+        const accepted=await askDuplicateApproval(result.duplicateLayout||{},{});
+        if(!accepted){
+          if(!quiet)toast('Layout repetido não foi adicionado.');
+          return false;
+        }
+        card?.classList.add('import-progress');
+        result=await importerRequest('approve',{id,forceDuplicate:true});
+      }
+      if(!quiet)toast(result.duplicate?'Layout repetido adicionado com sua autorização.':'Layout adicionado!');
       return true;
     }catch(err){
       console.error(err);
@@ -337,7 +398,70 @@
   listEl.addEventListener('click',async e=>{const edit=e.target.closest('[data-edit]');if(edit){const item=layouts.find(x=>String(x.id)===edit.dataset.edit);if(item)openModal(item);return;}const tog=e.target.closest('[data-toggle]');if(tog){const item=layouts.find(x=>String(x.id)===tog.dataset.toggle);if(!item)return;const {error}=await sb.from('layouts').update({ativo:!item.ativo,atualizado_em:new Date().toISOString()}).eq('id',item.id);if(error)toast('Erro ao alterar status.');else{toast(item.ativo?'Layout ocultado.':'Layout ativado.');await loadLayouts();}return;}const del=e.target.closest('[data-delete]');if(del){deleteTarget=layouts.find(x=>String(x.id)===del.dataset.delete)||null;if(deleteTarget)confirmModal.hidden=false;}});
   $('cancelDelete').onclick=()=>{confirmModal.hidden=true;deleteTarget=null;};$('confirmDelete').onclick=async()=>{if(!deleteTarget)return;const target=deleteTarget;const {error}=await sb.from('layouts').delete().eq('id',target.id);if(error){toast('Erro ao excluir layout.');return;}if(target.imagem_path)await sb.storage.from('layouts').remove([target.imagem_path]);confirmModal.hidden=true;deleteTarget=null;toast('Layout excluído.');await loadLayouts();};
   async function uploadLayoutImage(file,cv){if(!file)return null;if(file.size>8*1024*1024)throw new Error('A imagem deve ter no máximo 8 MB.');const ext=(file.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'');const path=`cv${cv}/${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext}`;const {error}=await sb.storage.from('layouts').upload(path,file,{cacheControl:'3600',upsert:false});if(error)throw error;const {data}=sb.storage.from('layouts').getPublicUrl(path);return {url:data.publicUrl,path};}
-  layoutForm.addEventListener('submit',async e=>{e.preventDefault();const saveBtn=$('btnSave');saveBtn.disabled=true;saveBtn.textContent='Salvando...';const id=$('layoutId').value,current=id?layouts.find(x=>String(x.id)===id):null,file=$('layoutImage').files[0];try{let imagem_url=$('currentImageUrl').value||null,imagem_path=$('currentImagePath').value||null;if(file){const uploaded=await uploadLayoutImage(file,$('layoutCv').value);imagem_url=uploaded.url;imagem_path=uploaded.path;}const cvNumero=Number($('layoutCv').value);if(!Number.isInteger(cvNumero)||cvNumero<1)throw new Error('Informe um Centro de Vila válido.');const payload={nome:current?.nome||`Layout CV${cvNumero}`,cv:cvNumero,tipo:'',descricao:value('layoutDescription')||null,link_layout:value('layoutLink'),imagem_url,imagem_path,ativo:$('layoutActive').checked,destaque:$('layoutFeatured').checked,ordem:Number($('layoutOrder').value||0),atualizado_em:new Date().toISOString()};const result=id?await sb.from('layouts').update(payload).eq('id',id):await sb.from('layouts').insert(payload);if(result.error)throw result.error;if(file&&current?.imagem_path&&current.imagem_path!==imagem_path)await sb.storage.from('layouts').remove([current.imagem_path]);toast(id?'Layout atualizado!':'Layout adicionado!');closeModal();await loadLayouts();}catch(err){console.error(err);toast(err.message||'Erro ao salvar layout.');}finally{saveBtn.disabled=false;saveBtn.textContent='Salvar layout';}});
+  layoutForm.addEventListener('submit',async e=>{
+    e.preventDefault();
+    const saveBtn=$('btnSave');
+    saveBtn.disabled=true;
+    saveBtn.textContent='Verificando...';
+    const id=$('layoutId').value;
+    const current=id?layouts.find(x=>String(x.id)===id):null;
+    const file=$('layoutImage').files[0];
+    try{
+      const cvNumero=Number($('layoutCv').value);
+      if(!Number.isInteger(cvNumero)||cvNumero<1)throw new Error('Informe um Centro de Vila válido.');
+
+      const layoutLink=value('layoutLink');
+      if(!layoutLink)throw new Error('Informe o link do layout.');
+
+      // Antes de enviar imagem ou gravar no banco, procura o mesmo link.
+      const duplicate=await findDuplicateLayoutByLink(layoutLink,id);
+      if(duplicate){
+        saveBtn.textContent='Aguardando confirmação...';
+        const accepted=await askDuplicateApproval(duplicate,{editing:!!id});
+        if(!accepted){
+          toast('Operação cancelada. O layout repetido não foi salvo.');
+          return;
+        }
+      }
+
+      saveBtn.textContent='Salvando...';
+      let imagem_url=$('currentImageUrl').value||null;
+      let imagem_path=$('currentImagePath').value||null;
+      if(file){
+        const uploaded=await uploadLayoutImage(file,cvNumero);
+        imagem_url=uploaded.url;
+        imagem_path=uploaded.path;
+      }
+
+      const payload={
+        nome:current?.nome||`Layout CV${cvNumero}`,
+        cv:cvNumero,
+        tipo:'',
+        descricao:value('layoutDescription')||null,
+        link_layout:layoutLink,
+        imagem_url,
+        imagem_path,
+        ativo:$('layoutActive').checked,
+        destaque:$('layoutFeatured').checked,
+        ordem:Number($('layoutOrder').value||0),
+        atualizado_em:new Date().toISOString()
+      };
+
+      const result=id?await sb.from('layouts').update(payload).eq('id',id):await sb.from('layouts').insert(payload);
+      if(result.error)throw result.error;
+      if(file&&current?.imagem_path&&current.imagem_path!==imagem_path)await sb.storage.from('layouts').remove([current.imagem_path]);
+      toast(duplicate?(id?'Layout repetido atualizado com sua autorização.':'Layout repetido adicionado com sua autorização.'):(id?'Layout atualizado!':'Layout adicionado!'));
+      closeModal();
+      await loadLayouts();
+    }catch(err){
+      console.error(err);
+      toast(err.message||'Erro ao salvar layout.');
+    }finally{
+      saveBtn.disabled=false;
+      saveBtn.textContent='Salvar layout';
+    }
+  });
+
 
   init();
 })();

@@ -189,7 +189,19 @@
   </div></div>
 
   <div class="confirm-backdrop" id="confirmModal" hidden><div class="confirm-card"><div class="confirm-icon">🗑️</div><h3>Excluir layout?</h3><p>Essa ação não poderá ser desfeita.</p><div><button class="secondary" id="cancelDelete">Cancelar</button><button class="danger-btn" id="confirmDelete">Excluir</button></div></div></div>
+
+  <div class="confirm-backdrop" id="duplicateModal" hidden>
+    <div class="confirm-card" role="dialog" aria-modal="true" aria-labelledby="duplicateTitle" aria-describedby="duplicateText">
+      <div class="confirm-icon">⚠️</div>
+      <h3 id="duplicateTitle">Link de layout repetido</h3>
+      <p id="duplicateText">Este link já está cadastrado. Deseja adicionar mesmo assim?</p>
+      <div>
+        <button class="secondary" id="cancelDuplicate" type="button">Não, cancelar</button>
+        <button class="primary" id="confirmDuplicate" type="button">Sim, adicionar</button>
+      </div>
+    </div>
+  </div>
   <div class="toast" id="toast"></div>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="../supabase-config.js?v=20260826-auto-update"></script><script src="admin.js?v=20260826-auto-update"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="../supabase-config.js?v=20260826-auto-update"></script><script src="admin.js?v=20260826-duplicate-check"></script>
 </body>
 </html>
