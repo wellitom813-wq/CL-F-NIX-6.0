@@ -198,3 +198,12 @@ input[type=checkbox]{accent-color:#df4b1d}
   .sidebar-backdrop.show{opacity:1;pointer-events:auto}
   .welcome-icon,.welcome-icon span{width:68px;height:68px;border-radius:18px}
 }
+
+
+/* ===== Tema Premium Fênix 7.0 — somente visual, sem alterar funções ===== */
+:root{--premium-gold:#e4aa40;--premium-red:#ec4f24;--premium-bg:#080706}
+body{background:radial-gradient(circle at 82% 0,rgba(236,79,36,.10),transparent 28%),linear-gradient(180deg,#070605,#0c0907 52%,#080706)!important}
+body:after{content:"";position:fixed;inset:0;z-index:9999;pointer-events:none;opacity:.04;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E")}
+.admin-topbar,.sidebar,.panel,.admin-layout,.modal-card,.import-panel{border-color:rgba(236,79,36,.22)!important;box-shadow:0 18px 55px rgba(0,0,0,.24)!important}
+.admin-topbar{background:rgba(8,7,6,.94)!important}.sidebar,.panel,.modal-card,.admin-layout,.import-panel{background:linear-gradient(145deg,rgba(20,17,14,.98),rgba(10,9,8,.98))!important}
+.admin-logo,.sidebar-logo{filter:drop-shadow(0 0 12px rgba(236,79,36,.20))}.nav-item.active,.primary-btn,.save-btn{background:linear-gradient(180deg,#c93218,#7f1409)!important;border-color:#ee5b2c!important}.eyebrow,.metric strong,.cv-count-card strong{color:var(--premium-gold)!important}
