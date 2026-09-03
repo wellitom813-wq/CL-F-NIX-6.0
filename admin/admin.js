@@ -98,9 +98,45 @@
   $('btnLogout').addEventListener('click',async()=>{if(sb)await sb.auth.signOut();});
 
   // -------- Navegação do painel --------
-  const titles={overview:'Visão geral',home:'Página inicial',links:'Links oficiais',content:'Missão e conteúdo',appearance:'Aparência',layouts:'Layouts'};
-  function openView(name){document.querySelectorAll('[data-view-panel]').forEach(p=>{p.hidden=p.dataset.viewPanel!==name;p.classList.toggle('active',p.dataset.viewPanel===name);});document.querySelectorAll('.sidebar [data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===name));$('pageTitle').textContent=titles[name]||'Painel';closeSidebar();window.scrollTo({top:0,behavior:'smooth'});}
-  document.addEventListener('click',e=>{const btn=e.target.closest('[data-view]');if(btn&&!btn.closest('[data-view-panel] form')){const name=btn.dataset.view;if(titles[name])openView(name);}});
+  const titles={
+    overview:'Visão geral',
+    home:'Página inicial',
+    links:'Links oficiais',
+    content:'Missão e conteúdo',
+    clans:'Clãs Fênix',
+    appearance:'Aparência',
+    sections:'Seções e ordem',
+    layouts:'Layouts'
+  };
+
+  function openView(name){
+    const target=document.querySelector(`[data-view-panel="${name}"]`);
+    if(!target)return;
+
+    document.querySelectorAll('[data-view-panel]').forEach(p=>{
+      const active=p.dataset.viewPanel===name;
+      p.hidden=!active;
+      p.classList.toggle('active',active);
+    });
+
+    document.querySelectorAll('.sidebar [data-view]').forEach(b=>{
+      b.classList.toggle('active',b.dataset.view===name);
+    });
+
+    if($('pageTitle')) $('pageTitle').textContent=titles[name]||'Painel';
+    closeSidebar();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+
+  document.addEventListener('click',e=>{
+    const btn=e.target.closest('[data-view]');
+    if(!btn || btn.closest('[data-view-panel] form')) return;
+
+    const name=btn.dataset.view;
+    if(name && document.querySelector(`[data-view-panel="${name}"]`)){
+      openView(name);
+    }
+  });
   const sidebarBackdrop=$('adminSidebarBackdrop');
   function closeSidebar(){
     $('sidebar').classList.remove('open');
@@ -482,3 +518,4 @@
 
   init();
 })();
+
