@@ -32,8 +32,8 @@
   <link rel="manifest" href="site.webmanifest">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=20260903-premium">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Montserrat:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=20260903-cms-total">
 </head>
 <body>
   <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
@@ -41,7 +41,7 @@
   <header class="site-header" id="topo">
     <div class="container nav-wrap">
       <a class="brand" href="#inicio" aria-label="Clã Fênix - início">
-        <img class="brand-mark" src="assets/fenix-f.png" alt="" aria-hidden="true" width="45" height="45">
+        <img class="brand-mark" data-site-logo src="assets/fenix-f.png" alt="" aria-hidden="true" width="45" height="45">
         <span class="brand-copy">
           <strong id="brandName">CLÃ FÊNIX</strong>
           <small id="brandTag">#VJ8GGLR8</small>
@@ -65,7 +65,7 @@
   <div class="menu-backdrop" id="menuBackdrop" aria-hidden="true"></div>
 
   <main id="conteudo">
-    <section class="hero" id="inicio">
+    <section class="hero" id="inicio" data-cms-section="hero">
       <div class="hero-noise" aria-hidden="true"></div>
       <div class="container hero-grid">
         <div class="hero-copy">
@@ -89,14 +89,14 @@
           <div class="hero-orbit orbit-one"></div>
           <div class="hero-orbit orbit-two"></div>
           <div class="hero-logo-card" aria-label="Símbolo F do Clã Fênix">
-            <img class="hero-monogram" src="assets/fenix-f.png" decoding="async" fetchpriority="high" alt="Símbolo F do Clã Fênix" width="1024" height="1024">
+            <img class="hero-monogram" data-site-logo src="assets/fenix-f.png" alt="Símbolo F do Clã Fênix" width="1024" height="1024">
             <div class="hero-logo-caption"><strong>CLÃ FÊNIX</strong><span>ESTRATÉGIA • UNIÃO • VITÓRIA</span></div>
           </div>
         </div>
       </div>
     </section>
 
-    <section class="quick-section" id="atalhos">
+    <section class="quick-section" id="atalhos" data-cms-section="quick_links">
       <div class="container quick-grid">
         <a class="quick-card" id="clanCard" href="https://link.clashofclans.com/pt?action=OpenClanProfile&tag=VJ8GGLR8" target="_blank" rel="noopener">
           <span class="quick-icon">🛡️</span>
@@ -116,75 +116,31 @@
       </div>
     </section>
 
-
-
-    <section class="section clans-section" id="familia-clas" aria-labelledby="clansTitle">
-      <div class="container clans-shell">
-        <span class="clans-ribbon">★ FAMÍLIA FÊNIX</span>
-        <div class="section-heading centered clans-heading">
-          <span class="eyebrow">🏆 REDE DE CLÃS</span>
-          <h2 id="clansTitle">CLÃS FÊNIX</h2>
-          <p>Acesse rapidamente todos os clãs da Família Fênix e abra diretamente no Clash of Clans.</p>
+    <section class="section clan-family-section" id="clas" data-cms-section="clans">
+      <div class="container clan-family-shell premium-panel">
+        <div class="section-heading centered">
+          <span class="eyebrow" id="clansKicker">🏆 CLÃS FÊNIX</span>
+          <h2 id="clansTitle">Família Fênix</h2>
+          <p id="clansSubtitle">Acesse rapidamente todos os clãs da Família Fênix e abra direto no Clash of Clans.</p>
         </div>
-
-        <div class="clans-grid">
-          <article class="clan-family-card clan-main">
-            <div class="clan-shield" aria-hidden="true"><span>⚔️</span></div>
-            <div class="clan-family-content">
-              <small>CLÃ PRINCIPAL</small>
-              <h3>#VJ8GGLR8</h3>
-              <span>Família Fênix</span>
-              <a href="https://link.clashofclans.com/pt?action=OpenClanProfile&amp;tag=VJ8GGLR8" target="_blank" rel="noopener">ABRIR NO JOGO</a>
-            </div>
-          </article>
-
-          <article class="clan-family-card">
-            <div class="clan-shield" aria-hidden="true"><span>⚔️</span></div>
-            <div class="clan-family-content">
-              <small>CLÃ 2</small>
-              <h3>#2GRGQVYQJ</h3>
-              <span>Família Fênix</span>
-              <a href="https://link.clashofclans.com/pt?action=OpenClanProfile&amp;tag=2GRGQVYQJ" target="_blank" rel="noopener">ABRIR NO JOGO</a>
-            </div>
-          </article>
-
-          <article class="clan-family-card">
-            <div class="clan-shield" aria-hidden="true"><span>⚔️</span></div>
-            <div class="clan-family-content">
-              <small>CLÃ 3</small>
-              <h3>#2G89YJVV8</h3>
-              <span>Família Fênix</span>
-              <a href="https://link.clashofclans.com/pt?action=OpenClanProfile&amp;tag=2G89YJVV8" target="_blank" rel="noopener">ABRIR NO JOGO</a>
-            </div>
-          </article>
-
-          <article class="clan-family-card">
-            <div class="clan-shield" aria-hidden="true"><span>⚔️</span></div>
-            <div class="clan-family-content">
-              <small>CLÃ 4</small>
-              <h3>#2CYY0VPUV</h3>
-              <span>Família Fênix</span>
-              <a href="https://link.clashofclans.com/pt?action=OpenClanProfile&amp;tag=2CYY0VPUV" target="_blank" rel="noopener">ABRIR NO JOGO</a>
-            </div>
-          </article>
-        </div>
+        <div class="clan-family-grid" id="clansGrid"></div>
       </div>
     </section>
 
-    <section class="section" id="sobre">
+    <section class="section" id="sobre" data-cms-section="about">
       <div class="container split-card premium-panel">
         <div class="section-heading compact">
-          <span class="eyebrow">🔥 SOBRE O CLÃ</span>
-          <h2>Uma comunidade feita para evoluir em equipe.</h2>
+          <span class="eyebrow" id="aboutKicker">🔥 SOBRE O CLÃ</span>
+          <h2 id="aboutTitle">Uma comunidade feita para evoluir em equipe.</h2>
         </div>
         <div class="about-copy">
-          <p>O Clã Fênix reúne jogadores de Clash of Clans que valorizam organização, respeito, participação e evolução constante.</p>
-          <p>Nosso objetivo é manter uma família ativa, competitiva e acolhedora, onde cada membro contribui para fortalecer o grupo.</p>
+          <p id="aboutText1">O Clã Fênix reúne jogadores de Clash of Clans que valorizam organização, respeito, participação e evolução constante.</p>
+          <p id="aboutText2">Nosso objetivo é manter uma família ativa, competitiva e acolhedora, onde cada membro contribui para fortalecer o grupo.</p>
         </div>
       </div>
     </section>
 
-    <section class="section mission-section" id="missao">
+    <section class="section mission-section" id="missao" data-cms-section="mission">
       <div class="container mission-card premium-panel">
         <div class="mission-icon" id="missionIcon">🦅</div>
         <div class="mission-copy">
@@ -192,11 +148,11 @@
           <h2 id="missionTitle">Uma família forte, organizada e respeitada.</h2>
           <p id="missionText">Construir uma família forte, organizada e respeitada, oferecendo um ambiente competitivo, divertido e acolhedor para todos os membros.</p>
         </div>
-        <img class="mission-mark" src="assets/fenix-f.png" loading="lazy" decoding="async" alt="" aria-hidden="true" width="120" height="120">
+        <img class="mission-mark" data-site-logo src="assets/fenix-f.png" alt="" aria-hidden="true" width="120" height="120">
       </div>
     </section>
 
-    <section class="section" id="recursos">
+    <section class="section" id="recursos" data-cms-section="resources">
       <div class="container">
         <div class="section-heading">
           <span class="eyebrow" id="resourcesKicker">⚔️ O QUE VOCÊ ENCONTRA AQUI</span>
@@ -214,7 +170,7 @@
       </div>
     </section>
 
-    <section class="section layouts-section" id="layouts">
+    <section class="section layouts-section" id="layouts" data-cms-section="layouts">
       <div class="container layouts-shell">
         <div class="layouts-header">
           <div class="section-heading compact">
@@ -243,7 +199,7 @@
       </div>
     </section>
 
-    <section class="section" id="valores">
+    <section class="section" id="valores" data-cms-section="values">
       <div class="container">
         <div class="section-heading centered">
           <span class="eyebrow" id="valuesKicker">🏆 NOSSOS VALORES</span>
@@ -259,7 +215,7 @@
       </div>
     </section>
 
-    <section class="section recruitment-section" id="recrutamento">
+    <section class="section recruitment-section" id="recrutamento" data-cms-section="family">
       <div class="container recruitment-card premium-panel" id="recruitmentCard">
         <div>
           <span class="eyebrow" id="familyKicker">🚀 FAÇA PARTE DA FAMÍLIA FÊNIX</span>
@@ -268,7 +224,7 @@
           <blockquote id="familyQuote">“Das cinzas renascemos mais fortes.”</blockquote>
         </div>
         <div class="recruitment-action">
-          <div class="recruitment-emblem" aria-hidden="true"><img class="recruitment-mark" src="assets/fenix-f.png" loading="lazy" decoding="async" alt="" width="150" height="150"></div>
+          <div class="recruitment-emblem" aria-hidden="true"><img class="recruitment-mark" data-site-logo src="assets/fenix-f.png" alt="" width="150" height="150"></div>
           <a class="btn btn-primary btn-large" id="familyCta" href="https://link.clashofclans.com/pt?action=OpenClanProfile&tag=VJ8GGLR8" target="_blank" rel="noopener">ENTRAR NO CLÃ →</a>
         </div>
       </div>
@@ -278,15 +234,15 @@
   <footer class="site-footer">
     <div class="container footer-grid">
       <div class="footer-brand">
-        <img class="brand-mark small" src="assets/fenix-f.png" loading="lazy" decoding="async" alt="" aria-hidden="true" width="40" height="40">
+        <img class="brand-mark small" data-site-logo src="assets/fenix-f.png" alt="" aria-hidden="true" width="40" height="40">
         <div><strong id="footerClanName">CLÃ FÊNIX</strong><span id="footerTag">#VJ8GGLR8</span></div>
       </div>
-      <p>Estratégia • União • Vitória</p>
+      <p id="footerMotto">Estratégia • União • Vitória</p>
       <div class="footer-links"><a href="#inicio">Início</a><a href="#layouts">Layouts</a><a href="#recrutamento">Recrutamento</a></div>
     </div>
     <div class="container footer-bottom">
       <span>© <span id="year"></span> Clã Fênix • Todos os direitos reservados.</span>
-      <span class="disclaimer">Clã Fênix é uma comunidade independente e não é afiliada à Supercell.</span>
+      <span class="disclaimer" id="footerDisclaimer">Clã Fênix é uma comunidade independente e não é afiliada à Supercell.</span>
     </div>
   </footer>
 
@@ -294,6 +250,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js?v=20260826-auto-update"></script>
-  <script src="script.js?v=20260903-premium"></script>
+  <script src="script.js?v=20260903-cms-total"></script>
 </body>
 </html>

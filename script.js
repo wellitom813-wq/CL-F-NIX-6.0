@@ -3,6 +3,13 @@ const $ = (id) => document.getElementById(id);
 const DEFAULT_STORE_URL = "https://store.supercell.com/pt/clashofclans";
 const DEFAULT_CLAN_URL = "https://link.clashofclans.com/pt?action=OpenClanProfile&tag=VJ8GGLR8";
 const DEFAULT_GROUP_URL = "https://chat.whatsapp.com/FJ7RJlbYxWT6wyPDNKk0GF";
+const DEFAULT_CLANS = [
+  { name: "CLÃ PRINCIPAL", tag: "#VJ8GGLR8", url: "https://link.clashofclans.com/pt?action=OpenClanProfile&tag=VJ8GGLR8", subtitle: "Família Fênix", enabled: true },
+  { name: "CLÃ 2", tag: "#2GRGQVYQJ", url: "https://link.clashofclans.com/pt?action=OpenClanProfile&tag=2GRGQVYQJ", subtitle: "Família Fênix", enabled: true },
+  { name: "CLÃ 3", tag: "#2G89YJVV8", url: "https://link.clashofclans.com/pt?action=OpenClanProfile&tag=2G89YJVV8", subtitle: "Família Fênix", enabled: true },
+  { name: "CLÃ 4", tag: "#2CYY0VPUV", url: "https://link.clashofclans.com/pt?action=OpenClanProfile&tag=2CYY0VPUV", subtitle: "Família Fênix", enabled: true }
+];
+const DEFAULT_SECTION_ORDER = ["hero","quick_links","clans","about","mission","resources","layouts","values","family"];
 let allLayouts = [];
 let activeCv = null;
 
@@ -149,6 +156,50 @@ function renderValues(values) {
   `).join("");
 }
 
+function renderClans(clans) {
+  const grid = $("clansGrid");
+  if (!grid) return;
+  const items = Array.isArray(clans) ? clans : DEFAULT_CLANS;
+  const enabled = items.filter((item) => item && item.enabled !== false);
+  grid.innerHTML = enabled.map((item, index) => {
+    const url = safeExternalUrl(item.url, "");
+    return `
+      <article class="clan-family-card${index === 0 ? " primary" : ""}">
+        <div class="clan-family-icon">⚔️</div>
+        <div class="clan-family-copy">
+          <small>${htmlEscape(item.name || `CLÃ ${index + 1}`)}</small>
+          <h3>${htmlEscape(item.tag || "")}</h3>
+          <p>${htmlEscape(item.subtitle || "Família Fênix")}</p>
+          ${url ? `<a href="${htmlEscape(url)}" target="_blank" rel="noopener">ABRIR NO JOGO</a>` : ""}
+        </div>
+      </article>`;
+  }).join("");
+}
+
+function applyLogoConfig(cfg) {
+  const logoUrl = safeExternalUrl(cfg.logo_url, "") || "assets/fenix-f.png";
+  document.querySelectorAll("[data-site-logo]").forEach((img) => { img.src = logoUrl; });
+  if (cfg.logo_url) document.querySelectorAll('link[rel="icon"]').forEach((favicon) => { favicon.href = logoUrl; });
+  const size = Math.min(520, Math.max(160, Number(cfg.logo_size || 320)));
+  document.documentElement.style.setProperty("--cms-logo-size", `${size}px`);
+  const radius = Math.min(40, Math.max(0, Number(cfg.card_radius ?? 18)));
+  document.documentElement.style.setProperty("--cms-card-radius", `${radius}px`);
+  const glow = Math.min(80, Math.max(0, Number(cfg.glow_strength ?? 30)));
+  document.documentElement.style.setProperty("--cms-logo-glow", `${glow}px`);
+  document.body.classList.toggle("logo-decorations", cfg.show_logo_decorations === true);
+  const caption = document.querySelector(".hero-logo-caption");
+  if (caption) caption.hidden = cfg.show_logo_caption !== true;
+}
+
+function applySectionOrder(order) {
+  const main = $("conteudo");
+  if (!main) return;
+  const requested = Array.isArray(order) ? order : DEFAULT_SECTION_ORDER;
+  const known = new Map([...main.querySelectorAll(":scope > [data-cms-section]")].map((el) => [el.dataset.cmsSection, el]));
+  const finalOrder = [...requested, ...DEFAULT_SECTION_ORDER.filter((key) => !requested.includes(key))];
+  finalOrder.forEach((key) => { const el = known.get(key); if (el) main.appendChild(el); });
+}
+
 function applySiteConfig(cfg) {
   if (!cfg) return;
 
@@ -160,6 +211,18 @@ function applySiteConfig(cfg) {
   text("footerTag", tag);
   text("portalLabel", cfg.portal_label);
   text("heroEyebrow", cfg.hero_eyebrow);
+  text("aboutKicker", cfg.about_kicker);
+  text("aboutTitle", cfg.about_title);
+  text("aboutText1", cfg.about_text_1);
+  text("aboutText2", cfg.about_text_2);
+  text("clansKicker", cfg.clans_kicker);
+  text("clansTitle", cfg.clans_title);
+  text("clansSubtitle", cfg.clans_subtitle);
+  text("footerMotto", cfg.footer_motto);
+  text("footerDisclaimer", cfg.footer_disclaimer);
+  renderClans(cfg.clans);
+  applyLogoConfig(cfg);
+  applySectionOrder(cfg.section_order);
 
   if (cfg.hero_title && String(cfg.hero_title).trim()) {
     const parts = String(cfg.hero_title).trim().split(/\s+/);
@@ -252,6 +315,8 @@ function applySiteConfig(cfg) {
   const visibilityMap = [
     ["show_hero", "inicio"],
     ["show_quick_links", "atalhos"],
+    ["show_clans", "clas"],
+    ["show_about", "sobre"],
     ["show_mission", "missao"],
     ["show_resources", "recursos"],
     ["show_layouts", "layouts"],
@@ -311,7 +376,7 @@ function renderLayouts() {
     const imageButton = item.image ? `
       <button class="layout-thumb layout-thumb-button" type="button" data-layout-image="${htmlEscape(item.image)}" data-layout-name="${htmlEscape(item.name)}" aria-label="Ampliar imagem de ${htmlEscape(item.name)}">
         <span class="layout-number">${number}</span>
-        <img src="${htmlEscape(item.image)}" alt="${htmlEscape(item.name)}" loading="lazy" decoding="async" fetchpriority="low" onerror="this.closest('.layout-thumb-button')?.setAttribute('disabled','')">
+        <img src="${htmlEscape(item.image)}" alt="${htmlEscape(item.name)}" loading="lazy" onerror="this.closest('.layout-thumb-button')?.setAttribute('disabled','')">
         <span class="layout-zoom-hint" aria-hidden="true">⌕</span>
       </button>` : `
       <div class="layout-thumb"><span class="layout-number">${number}</span><span>${htmlEscape(item.cv || "BASE")}</span></div>`;
@@ -474,25 +539,6 @@ async function loadCmsAndLayouts() {
   }
 }
 
-
-function setupPremiumReveal() {
-  if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
-  const targets = document.querySelectorAll('.premium-panel,.quick-card,.clan-family-card,.feature-card,.layout-card,.value-pill,.section-heading');
-  targets.forEach((node, index) => {
-    node.classList.add('premium-reveal');
-    node.style.setProperty('--reveal-delay', `${Math.min(index % 6, 5) * 45}ms`);
-  });
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('premium-visible');
-        observer.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.08, rootMargin: '0px 0px -30px 0px' });
-  targets.forEach((node) => observer.observe(node));
-}
-
 function setCurrentYear() {
   text("year", new Date().getFullYear());
 }
@@ -542,6 +588,5 @@ document.addEventListener("DOMContentLoaded", () => {
   syncPublicCvFilters();
   setCurrentYear();
   setupAutomaticPublicRefresh();
-  setupPremiumReveal();
   refreshPublicContent({ force: true });
 });
