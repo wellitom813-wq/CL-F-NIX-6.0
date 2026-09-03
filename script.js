@@ -311,7 +311,7 @@ function renderLayouts() {
     const imageButton = item.image ? `
       <button class="layout-thumb layout-thumb-button" type="button" data-layout-image="${htmlEscape(item.image)}" data-layout-name="${htmlEscape(item.name)}" aria-label="Ampliar imagem de ${htmlEscape(item.name)}">
         <span class="layout-number">${number}</span>
-        <img src="${htmlEscape(item.image)}" alt="${htmlEscape(item.name)}" loading="lazy" onerror="this.closest('.layout-thumb-button')?.setAttribute('disabled','')">
+        <img src="${htmlEscape(item.image)}" alt="${htmlEscape(item.name)}" loading="lazy" decoding="async" fetchpriority="low" onerror="this.closest('.layout-thumb-button')?.setAttribute('disabled','')">
         <span class="layout-zoom-hint" aria-hidden="true">⌕</span>
       </button>` : `
       <div class="layout-thumb"><span class="layout-number">${number}</span><span>${htmlEscape(item.cv || "BASE")}</span></div>`;
@@ -474,6 +474,25 @@ async function loadCmsAndLayouts() {
   }
 }
 
+
+function setupPremiumReveal() {
+  if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+  const targets = document.querySelectorAll('.premium-panel,.quick-card,.clan-family-card,.feature-card,.layout-card,.value-pill,.section-heading');
+  targets.forEach((node, index) => {
+    node.classList.add('premium-reveal');
+    node.style.setProperty('--reveal-delay', `${Math.min(index % 6, 5) * 45}ms`);
+  });
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('premium-visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.08, rootMargin: '0px 0px -30px 0px' });
+  targets.forEach((node) => observer.observe(node));
+}
+
 function setCurrentYear() {
   text("year", new Date().getFullYear());
 }
@@ -523,5 +542,6 @@ document.addEventListener("DOMContentLoaded", () => {
   syncPublicCvFilters();
   setCurrentYear();
   setupAutomaticPublicRefresh();
+  setupPremiumReveal();
   refreshPublicContent({ force: true });
 });
