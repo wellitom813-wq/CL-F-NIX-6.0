@@ -11,7 +11,7 @@
   <link rel="icon" type="image/webp" href="../assets/favicon.webp">
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Orbitron:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="admin.css?v=20260826-auto-update">
+  <link rel="stylesheet" href="admin.css?v=20260903-cms-total">
 </head>
 <body>
   <section class="login-page" id="loginPage">
@@ -31,8 +31,10 @@
         <button class="nav-item active" data-view="overview">⌂ <span>Visão geral</span></button>
         <button class="nav-item" data-view="home">🏠 <span>Página inicial</span></button>
         <button class="nav-item" data-view="links">🔗 <span>Links oficiais</span></button>
-        <button class="nav-item" data-view="content">✦ <span>Missão e conteúdo</span></button>
+        <button class="nav-item" data-view="content">✦ <span>Textos e conteúdo</span></button>
+        <button class="nav-item" data-view="clans">🏆 <span>Clãs Fênix</span></button>
         <button class="nav-item" data-view="appearance">🎨 <span>Aparência</span></button>
+        <button class="nav-item" data-view="sections">↕ <span>Seções e ordem</span></button>
         <button class="nav-item" data-view="layouts">🛡️ <span>Layouts</span></button>
         <button class="nav-item" id="btnNewSidebar">＋ <span>Novo layout</span></button>
         <a class="nav-item" href="../" target="_blank">↗ <span>Ver site</span></a>
@@ -54,8 +56,8 @@
         <div class="quick-admin-grid">
           <button data-view="home"><span>🏠</span><strong>Editar página inicial</strong><small>Nome, textos e apresentação</small></button>
           <button data-view="links"><span>🔗</span><strong>Trocar links oficiais</strong><small>Clã, WhatsApp e Supercell</small></button>
-          <button data-view="appearance"><span>🎨</span><strong>Mudar aparência</strong><small>Imagens, cores e seções</small></button>
-          <button data-view="layouts"><span>🛡️</span><strong>Gerenciar layouts</strong><small>Galerias e importação automática</small></button>
+          <button data-view="appearance"><span>🎨</span><strong>Mudar aparência</strong><small>Logo, imagens, cores e efeitos</small></button>
+          <button data-view="clans"><span>🏆</span><strong>Editar Clãs Fênix</strong><small>Tags, nomes e links dos 4 clãs</small></button>
         </div>
         <div class="notice" id="cmsNotice" hidden><strong>⚠️ Falta ativar o CMS no Supabase</strong><p>A tabela <b>site_config</b> ou as permissões do painel não estão disponíveis. Verifique o projeto Supabase e atualize esta página.</p></div>
       </section>
@@ -87,6 +89,11 @@
       <section class="view" data-view-panel="content" hidden>
         <form class="panel settings-form" id="contentForm">
           <div class="panel-head"><div><h2>Missão e conteúdo</h2><p>Edite a missão, os cards, valores e a chamada final.</p></div><button class="primary" type="submit">Salvar conteúdo</button></div>
+          <h3>Sobre o Clã</h3>
+          <div class="form-grid two"><label>Chamada<input id="cfgAboutKicker"></label><label>Título<input id="cfgAboutTitle"></label></div>
+          <label>Primeiro texto<textarea id="cfgAboutText1" rows="3"></textarea></label>
+          <label>Segundo texto<textarea id="cfgAboutText2" rows="3"></textarea></label>
+          <div class="divider"></div>
           <h3>Missão</h3>
           <div class="form-grid three"><label>Ícone<input id="cfgMissionIcon" maxlength="10"></label><label>Chamada<input id="cfgMissionKicker"></label><label>Título<input id="cfgMissionTitle"></label></div>
           <label>Texto da missão<textarea id="cfgMissionText" rows="3"></textarea></label>
@@ -102,25 +109,45 @@
           <h3>Chamada final</h3>
           <div class="form-grid two"><label>Chamada<input id="cfgFamilyKicker"></label><label>Título<input id="cfgFamilyTitle"></label></div>
           <label>Texto<textarea id="cfgFamilyText" rows="3"></textarea></label><div class="form-grid two"><label>Frase final<input id="cfgFamilyQuote"></label><label>Texto do botão<input id="cfgFamilyCta"></label></div>
+          <div class="divider"></div>
+          <h3>Rodapé</h3>
+          <div class="form-grid two"><label>Frase do rodapé<input id="cfgFooterMotto"></label><label>Aviso legal<input id="cfgFooterDisclaimer"></label></div>
         </form>
       </section>
 
       <section class="view" data-view-panel="appearance" hidden>
         <form class="panel settings-form" id="appearanceForm">
-          <div class="panel-head"><div><h2>Aparência do site</h2><p>Troque imagens, cores e escolha quais seções aparecem.</p></div><button class="primary" type="submit">Salvar aparência</button></div>
+          <div class="panel-head"><div><h2>Aparência do site</h2><p>Troque logo, banners, cores, tamanhos e efeitos diretamente pelo celular.</p></div><button class="primary" type="submit">Salvar aparência</button></div>
+          <h3>Logo oficial</h3>
+          <div class="asset-card logo-editor-card"><div class="logo-preview" id="logoPreview"><img id="logoPreviewImg" src="../assets/fenix-f.png" alt="Logo atual"></div><div><strong>Logo do site</strong><small>PNG, JPG ou WEBP. Fundo transparente recomendado.</small><label class="upload-btn">Selecionar nova logo<input id="cfgLogoFile" type="file" accept="image/png,image/jpeg,image/webp"></label><button class="secondary mini-action" id="btnResetLogo" type="button">Usar logo padrão do projeto</button></div></div>
+          <div class="form-grid three"><label>Tamanho da logo (px)<input id="cfgLogoSize" type="number" min="160" max="520" step="10"></label><label>Glow da logo (0–80)<input id="cfgGlowStrength" type="number" min="0" max="80"></label><label>Raio dos cards (0–40)<input id="cfgCardRadius" type="number" min="0" max="40"></label></div>
+          <div class="visibility-grid"><label><input id="showLogoCaption" type="checkbox"><span>Mostrar legenda abaixo da logo</span></label><label><input id="showLogoDecorations" type="checkbox"><span>Mostrar círculos decorativos da logo</span></label></div>
+          <div class="divider"></div>
           <h3>Cores</h3>
           <div class="color-grid"><label>Cor principal<div class="color-field"><input id="cfgPrimaryColor" type="color"><input id="cfgPrimaryColorText" maxlength="7"></div></label><label>Cor de destaque<div class="color-field"><input id="cfgAccentColor" type="color"><input id="cfgAccentColorText" maxlength="7"></div></label><label>Cor de fundo<div class="color-field"><input id="cfgBackgroundColor" type="color"><input id="cfgBackgroundColorText" maxlength="7"></div></label></div>
           <div class="divider"></div>
-          <h3>Banners</h3><p class="muted">O símbolo do site permanece como a letra F. Aqui você pode trocar apenas os fundos, pelo celular.</p>
+          <h3>Banners</h3>
           <div class="asset-grid">
             <div class="asset-card wide"><div class="asset-bg-preview" id="heroBgPreview"></div><div><strong>Fundo do topo</strong><small>Banner opcional</small><label class="upload-btn">Selecionar<input id="cfgHeroBgFile" type="file" accept="image/png,image/jpeg,image/webp"></label></div></div>
             <div class="asset-card wide"><div class="asset-bg-preview" id="familyBgPreview"></div><div><strong>Fundo da chamada final</strong><small>Banner opcional</small><label class="upload-btn">Selecionar<input id="cfgFamilyBgFile" type="file" accept="image/png,image/jpeg,image/webp"></label></div></div>
           </div>
-          <div class="divider"></div>
-          <h3>Seções visíveis</h3>
-          <div class="visibility-grid">
-            <label><input id="showHero" type="checkbox"><span>Topo / apresentação</span></label><label><input id="showQuickLinks" type="checkbox"><span>Links oficiais</span></label><label><input id="showMission" type="checkbox"><span>Missão</span></label><label><input id="showResources" type="checkbox"><span>Cards de conteúdo</span></label><label><input id="showLayouts" type="checkbox"><span>Layouts</span></label><label><input id="showValues" type="checkbox"><span>Valores</span></label><label><input id="showFamily" type="checkbox"><span>Chamada final</span></label>
-          </div>
+        </form>
+      </section>
+
+      <section class="view" data-view-panel="clans" hidden>
+        <form class="panel settings-form" id="clansForm">
+          <div class="panel-head"><div><h2>Clãs Fênix</h2><p>Edite os quatro clãs, nomes, tags, links e visibilidade.</p></div><button class="primary" type="submit">Salvar clãs</button></div>
+          <div class="form-grid two"><label>Chamada da seção<input id="cfgClansKicker"></label><label>Título da seção<input id="cfgClansTitle"></label></div>
+          <label>Descrição<input id="cfgClansSubtitle"></label>
+          <div class="repeat-list clan-editor-list" id="clansEditor"></div>
+        </form>
+      </section>
+
+      <section class="view" data-view-panel="sections" hidden>
+        <form class="panel settings-form" id="sectionsForm">
+          <div class="panel-head"><div><h2>Seções e ordem</h2><p>Ative, oculte e reorganize a página inicial sem alterar o código.</p></div><button class="primary" type="submit">Salvar seções</button></div>
+          <div class="section-order-list" id="sectionOrderEditor"></div>
+          <div class="notice info-notice"><strong>↕ Como funciona</strong><p>Use as setas para mudar a ordem. O botão de visibilidade decide se a seção aparece no site.</p></div>
         </form>
       </section>
 
@@ -202,6 +229,6 @@
     </div>
   </div>
   <div class="toast" id="toast"></div>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="../supabase-config.js?v=20260826-auto-update"></script><script src="admin.js?v=20260826-duplicate-check"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="../supabase-config.js?v=20260826-auto-update"></script><script src="admin.js?v=20260903-cms-total"></script>
 </body>
 </html>
