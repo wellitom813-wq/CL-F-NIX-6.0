@@ -87,3 +87,91 @@ button,a{touch-action:manipulation}button:focus-visible,a:focus-visible,input:fo
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
 
 .premium-reveal{opacity:0;transform:translateY(16px);transition:opacity .5s ease var(--reveal-delay,0ms),transform .5s ease var(--reveal-delay,0ms)}.premium-reveal.premium-visible{opacity:1;transform:none}@media(prefers-reduced-motion:reduce){.premium-reveal{opacity:1;transform:none}}
+
+/* =========================================================
+   LOGO HERO LIMPA — FÊNIX SEM ESCUDO / SEM LINHAS LATERAIS
+   ========================================================= */
+
+/* Remove todos os elementos decorativos em volta da logo */
+.hero-orbit,
+.hero-logo-card::before,
+.hero-logo-card::after,
+.hero-logo-caption,
+.hero-visual::after {
+  display: none !important;
+}
+
+/* Evita o espaço vertical exagerado da arte antiga */
+.hero-visual {
+  position: relative !important;
+  min-height: 360px !important;
+  display: grid !important;
+  place-items: center !important;
+}
+
+/* Remove o escudo/polígono comprido e deixa somente a imagem */
+.hero-logo-card {
+  position: relative !important;
+  width: min(360px, 78vw) !important;
+  height: auto !important;
+  aspect-ratio: auto !important;
+  display: grid !important;
+  place-items: center !important;
+  padding: 0 !important;
+  margin: 0 auto !important;
+  clip-path: none !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  filter: none !important;
+  overflow: visible !important;
+}
+
+/* A nova Fênix aparece sozinha, centralizada e transparente */
+.hero-monogram {
+  display: block !important;
+  width: 100% !important;
+  max-width: 360px !important;
+  height: auto !important;
+  aspect-ratio: auto !important;
+  object-fit: contain !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  mix-blend-mode: normal !important;
+  filter: drop-shadow(0 0 22px rgba(240,79,28,.28)) !important;
+}
+
+/* Tablet e celular */
+@media (max-width: 780px) {
+  .hero-visual {
+    min-height: 270px !important;
+  }
+
+  .hero-logo-card {
+    width: min(265px, 68vw) !important;
+  }
+
+  .hero-monogram {
+    max-width: 265px !important;
+  }
+}
+
+/* Celulares menores */
+@media (max-width: 460px) {
+  .hero-visual {
+    min-height: 235px !important;
+  }
+
+  .hero-logo-card {
+    width: min(225px, 64vw) !important;
+  }
+
+  .hero-monogram {
+    max-width: 225px !important;
+  }
+}
