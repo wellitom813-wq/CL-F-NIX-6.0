@@ -1,21 +1,28 @@
+
 const $ = (id) => document.getElementById(id);
 
 const DEFAULT_STORE_URL = "https://store.supercell.com/pt/clashofclans";
 const DEFAULT_CLAN_URL = "https://link.clashofclans.com/pt?action=OpenClanProfile&tag=VJ8GGLR8";
 const DEFAULT_GROUP_URL = "https://chat.whatsapp.com/FJ7RJlbYxWT6wyPDNKk0GF";
+
 const DEFAULT_CLANS = [
   { name: "CLÃ PRINCIPAL", tag: "#VJ8GGLR8", url: "https://link.clashofclans.com/pt?action=OpenClanProfile&tag=VJ8GGLR8", subtitle: "Família Fênix", enabled: true },
   { name: "CLÃ 2", tag: "#2GRGQVYQJ", url: "https://link.clashofclans.com/pt?action=OpenClanProfile&tag=2GRGQVYQJ", subtitle: "Família Fênix", enabled: true },
   { name: "CLÃ 3", tag: "#2G89YJVV8", url: "https://link.clashofclans.com/pt?action=OpenClanProfile&tag=2G89YJVV8", subtitle: "Família Fênix", enabled: true },
   { name: "CLÃ 4", tag: "#2CYY0VPUV", url: "https://link.clashofclans.com/pt?action=OpenClanProfile&tag=2CYY0VPUV", subtitle: "Família Fênix", enabled: true }
 ];
+
 const DEFAULT_SECTION_ORDER = ["hero","quick_links","clans","about","mission","resources","layouts","values","family"];
+
 let allLayouts = [];
 let activeCv = null;
 
+// CORRIGIDO: agora permite aplicar textos vazios.
 function text(id, value) {
   const node = $(id);
-  if (node && value !== undefined && value !== null && String(value).trim() !== "") node.textContent = value;
+  if (node && value !== undefined && value !== null) {
+    node.textContent = String(value);
+  }
 }
 
 function htmlEscape(value) {
@@ -61,7 +68,9 @@ function getSupabaseClient() {
   const cfg = window.FENIX_SUPABASE || window.SUPABASE_CONFIG || window.supabaseConfig || {};
   const url = cfg.url || window.SUPABASE_URL;
   const key = cfg.anonKey || cfg.key || window.SUPABASE_ANON_KEY || window.SUPABASE_PUBLISHABLE_KEY;
+
   if (!window.supabase || !url || !key) return null;
+
   try {
     return window.supabase.createClient(url, key);
   } catch (error) {
@@ -74,6 +83,7 @@ function setupMenu() {
   const toggle = $("menuToggle");
   const nav = $("mainNav");
   const backdrop = $("menuBackdrop");
+
   if (!toggle || !nav) return;
 
   let lastFocused = null;
@@ -85,10 +95,12 @@ function setupMenu() {
     toggle.setAttribute("aria-expanded", "false");
     toggle.setAttribute("aria-label", "Abrir menu");
     document.body.classList.remove("menu-open");
+
     if (backdrop) {
       backdrop.classList.remove("show");
       backdrop.setAttribute("aria-hidden", "true");
     }
+
     if (restoreFocus && lastFocused && document.contains(lastFocused)) {
       lastFocused.focus({ preventScroll: true });
     }
@@ -101,10 +113,12 @@ function setupMenu() {
     toggle.setAttribute("aria-expanded", "true");
     toggle.setAttribute("aria-label", "Fechar menu");
     document.body.classList.add("menu-open");
+
     if (backdrop) {
       backdrop.classList.add("show");
       backdrop.setAttribute("aria-hidden", "false");
     }
+
     requestAnimationFrame(() => links[0]?.focus({ preventScroll: true }));
   };
 
@@ -112,12 +126,17 @@ function setupMenu() {
     event.preventDefault();
     nav.classList.contains("open") ? close() : open();
   });
+
   links.forEach((link) => link.addEventListener("click", () => close()));
   document.querySelector(".brand")?.addEventListener("click", () => close());
   backdrop?.addEventListener("click", () => close({ restoreFocus: true }));
+
   document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && nav.classList.contains("open")) close({ restoreFocus: true });
+    if (event.key === "Escape" && nav.classList.contains("open")) {
+      close({ restoreFocus: true });
+    }
   });
+
   window.addEventListener("resize", () => {
     if (window.innerWidth > 780 && nav.classList.contains("open")) close();
   }, { passive: true });
@@ -126,17 +145,27 @@ function setupMenu() {
 function setupBackToTop() {
   const btn = $("backToTop");
   if (!btn) return;
+
   const sync = () => btn.classList.toggle("show", window.scrollY > 550);
+
   window.addEventListener("scroll", sync, { passive: true });
   btn.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
+
   sync();
 }
 
 function renderResources(resources) {
   const grid = $("resourcesGrid");
   if (!grid || !Array.isArray(resources)) return;
+
   const enabled = resources.filter((item) => item && item.enabled !== false);
-  if (!enabled.length) return;
+
+  // CORRIGIDO: limpa a área quando todos os itens forem removidos.
+  if (!enabled.length) {
+    grid.innerHTML = "";
+    return;
+  }
+
   grid.innerHTML = enabled.map((item) => `
     <article class="feature-card">
       <span>${htmlEscape(item.icon || "🔥")}</span>
@@ -149,8 +178,15 @@ function renderResources(resources) {
 function renderValues(values) {
   const grid = $("valuesGrid");
   if (!grid || !Array.isArray(values)) return;
+
   const enabled = values.filter((item) => item && item.enabled !== false);
-  if (!enabled.length) return;
+
+  // CORRIGIDO: limpa a área quando todos os itens forem removidos.
+  if (!enabled.length) {
+    grid.innerHTML = "";
+    return;
+  }
+
   grid.innerHTML = enabled.map((item) => `
     <div class="value-pill"><span>${htmlEscape(item.icon || "🔥")}</span>${htmlEscape(item.title || "")}</div>
   `).join("");
@@ -159,10 +195,13 @@ function renderValues(values) {
 function renderClans(clans) {
   const grid = $("clansGrid");
   if (!grid) return;
+
   const items = Array.isArray(clans) ? clans : DEFAULT_CLANS;
   const enabled = items.filter((item) => item && item.enabled !== false);
+
   grid.innerHTML = enabled.map((item, index) => {
     const url = safeExternalUrl(item.url, "");
+
     return `
       <article class="clan-family-card${index === 0 ? " primary" : ""}">
         <div class="clan-family-icon">⚔️</div>
@@ -178,15 +217,28 @@ function renderClans(clans) {
 
 function applyLogoConfig(cfg) {
   const logoUrl = safeExternalUrl(cfg.logo_url, "") || "assets/fenix-f.png";
-  document.querySelectorAll("[data-site-logo]").forEach((img) => { img.src = logoUrl; });
-  if (cfg.logo_url) document.querySelectorAll('link[rel="icon"]').forEach((favicon) => { favicon.href = logoUrl; });
+
+  document.querySelectorAll("[data-site-logo]").forEach((img) => {
+    img.src = logoUrl;
+  });
+
+  if (cfg.logo_url) {
+    document.querySelectorAll('link[rel="icon"]').forEach((favicon) => {
+      favicon.href = logoUrl;
+    });
+  }
+
   const size = Math.min(520, Math.max(160, Number(cfg.logo_size || 320)));
   document.documentElement.style.setProperty("--cms-logo-size", `${size}px`);
+
   const radius = Math.min(40, Math.max(0, Number(cfg.card_radius ?? 18)));
   document.documentElement.style.setProperty("--cms-card-radius", `${radius}px`);
+
   const glow = Math.min(80, Math.max(0, Number(cfg.glow_strength ?? 30)));
   document.documentElement.style.setProperty("--cms-logo-glow", `${glow}px`);
+
   document.body.classList.toggle("logo-decorations", cfg.show_logo_decorations === true);
+
   const caption = document.querySelector(".hero-logo-caption");
   if (caption) caption.hidden = cfg.show_logo_caption !== true;
 }
@@ -194,10 +246,23 @@ function applyLogoConfig(cfg) {
 function applySectionOrder(order) {
   const main = $("conteudo");
   if (!main) return;
+
   const requested = Array.isArray(order) ? order : DEFAULT_SECTION_ORDER;
-  const known = new Map([...main.querySelectorAll(":scope > [data-cms-section]")].map((el) => [el.dataset.cmsSection, el]));
-  const finalOrder = [...requested, ...DEFAULT_SECTION_ORDER.filter((key) => !requested.includes(key))];
-  finalOrder.forEach((key) => { const el = known.get(key); if (el) main.appendChild(el); });
+
+  const known = new Map(
+    [...main.querySelectorAll(":scope > [data-cms-section]")]
+      .map((el) => [el.dataset.cmsSection, el])
+  );
+
+  const finalOrder = [
+    ...requested,
+    ...DEFAULT_SECTION_ORDER.filter((key) => !requested.includes(key))
+  ];
+
+  finalOrder.forEach((key) => {
+    const el = known.get(key);
+    if (el) main.appendChild(el);
+  });
 }
 
 function applySiteConfig(cfg) {
@@ -205,27 +270,33 @@ function applySiteConfig(cfg) {
 
   const clanName = cfg.clan_name || "CLÃ FÊNIX";
   const tag = cfg.clan_tag || "#VJ8GGLR8";
+
   text("brandName", clanName);
   text("footerClanName", clanName);
   text("brandTag", tag);
   text("footerTag", tag);
   text("portalLabel", cfg.portal_label);
   text("heroEyebrow", cfg.hero_eyebrow);
+
   text("aboutKicker", cfg.about_kicker);
   text("aboutTitle", cfg.about_title);
   text("aboutText1", cfg.about_text_1);
   text("aboutText2", cfg.about_text_2);
+
   text("clansKicker", cfg.clans_kicker);
   text("clansTitle", cfg.clans_title);
   text("clansSubtitle", cfg.clans_subtitle);
+
   text("footerMotto", cfg.footer_motto);
   text("footerDisclaimer", cfg.footer_disclaimer);
+
   renderClans(cfg.clans);
   applyLogoConfig(cfg);
   applySectionOrder(cfg.section_order);
 
   if (cfg.hero_title && String(cfg.hero_title).trim()) {
     const parts = String(cfg.hero_title).trim().split(/\s+/);
+
     if (parts.length > 1) {
       text("heroTitle", parts.slice(0, -1).join(" "));
       text("heroTitleEm", parts.at(-1));
@@ -238,6 +309,7 @@ function applySiteConfig(cfg) {
   text("heroIntro", cfg.hero_intro);
   text("heroSecondary", cfg.hero_secondary);
   text("heroSlogan", cfg.slogan);
+
   text("missionIcon", cfg.mission_icon);
   text("missionKicker", cfg.mission_kicker);
   text("missionTitle", cfg.mission_title);
@@ -265,6 +337,7 @@ function applySiteConfig(cfg) {
   const clanUrl = safeExternalUrl(cfg.link_clan_url, DEFAULT_CLAN_URL);
   const groupUrl = safeExternalUrl(cfg.link_group_url, DEFAULT_GROUP_URL);
   const storeUrl = safeStoreUrl(cfg.link_store_url);
+
   setLink("heroClanLink", clanUrl);
   setLink("familyCta", clanUrl);
   setLink("clanCard", clanUrl);
@@ -274,18 +347,25 @@ function applySiteConfig(cfg) {
   text("clanCardLabel", cfg.link_clan_label);
   text("clanCardText", cfg.link_clan_text);
   text("clanCardCta", cfg.link_clan_cta);
+
   text("groupCardLabel", cfg.link_group_label);
   text("groupCardText", cfg.link_group_text);
   text("groupCardCta", cfg.link_group_cta);
+
   text("storeCardLabel", cfg.link_store_label);
   text("storeCardText", cfg.link_store_text);
   text("storeCardCta", cfg.link_store_cta);
 
-
   const heroBg = safeExternalUrl(cfg.hero_background_url, "");
   const familyBg = safeExternalUrl(cfg.family_background_url, "");
-  if (heroBg) $("inicio")?.style.setProperty("--hero-image", `url("${heroBg.replaceAll('"', '%22')}")`);
-  if (familyBg) $("recruitmentCard")?.style.setProperty("--family-image", `url("${familyBg.replaceAll('"', '%22')}")`);
+
+  if (heroBg) {
+    $("inicio")?.style.setProperty("--hero-image", `url("${heroBg.replaceAll('"', '%22')}")`);
+  }
+
+  if (familyBg) {
+    $("recruitmentCard")?.style.setProperty("--family-image", `url("${familyBg.replaceAll('"', '%22')}")`);
+  }
 
   let primary = /^#[0-9a-f]{6}$/i.test(cfg.primary_color || "") ? cfg.primary_color : null;
   let accent = /^#[0-9a-f]{6}$/i.test(cfg.accent_color || "") ? cfg.accent_color : null;
@@ -303,12 +383,18 @@ function applySiteConfig(cfg) {
     document.documentElement.style.setProperty("--line-strong", "rgba(223,75,29,.36)");
     document.documentElement.style.setProperty("--glow", "rgba(223,75,29,.22)");
   }
-  if (accent) document.documentElement.style.setProperty("--accent", accent);
+
+  if (accent) {
+    document.documentElement.style.setProperty("--accent", accent);
+  }
+
   if (bg) {
     document.documentElement.style.setProperty("--bg", bg);
     document.documentElement.style.setProperty("--bg-2", "#0c0807");
   }
+
   document.documentElement.style.setProperty("--accent-2", "#f05a2b");
+
   const themeMeta = document.querySelector('meta[name="theme-color"]');
   if (themeMeta) themeMeta.setAttribute("content", "#8d2016");
 
@@ -323,6 +409,7 @@ function applySiteConfig(cfg) {
     ["show_values", "valores"],
     ["show_family", "recrutamento"]
   ];
+
   visibilityMap.forEach(([field, id]) => {
     const section = $(id);
     if (section) section.hidden = cfg[field] === false;
@@ -332,34 +419,41 @@ function applySiteConfig(cfg) {
 function renderLayouts() {
   const grid = $("layoutsGrid");
   const status = $("layoutsStatus");
+
   if (!grid || !status) return;
 
   if (!activeCv) {
     grid.hidden = true;
     status.hidden = false;
+
     status.innerHTML = `
       <div class="empty-state">
         <span>🏰</span>
         <strong>Escolha um Centro de Vila.</strong>
         <p>Toque em uma das galerias acima para visualizar somente os layouts daquele CV.</p>
       </div>`;
+
     return;
   }
 
   const filtered = allLayouts.filter((item) => item.cv === activeCv);
+
   if (!filtered.length) {
     grid.hidden = true;
     status.hidden = false;
+
     status.innerHTML = `
       <div class="empty-state">
         <span>🛡️</span>
         <strong>Ainda não há layouts de ${htmlEscape(activeCv)} cadastrados.</strong>
         <p>Quando novas bases forem adicionadas pelo painel, elas aparecerão aqui automaticamente.</p>
       </div>`;
+
     return;
   }
 
   status.hidden = false;
+
   status.innerHTML = `
     <div class="layout-status-bar">
       <div class="layout-status-icon">🛡️</div>
@@ -371,8 +465,10 @@ function renderLayouts() {
     </div>`;
 
   grid.hidden = false;
+
   grid.innerHTML = filtered.map((item, index) => {
     const number = String(index + 1).padStart(2, "0");
+
     const imageButton = item.image ? `
       <button class="layout-thumb layout-thumb-button" type="button" data-layout-image="${htmlEscape(item.image)}" data-layout-name="${htmlEscape(item.name)}" aria-label="Ampliar imagem de ${htmlEscape(item.name)}">
         <span class="layout-number">${number}</span>
@@ -382,9 +478,11 @@ function renderLayouts() {
       <div class="layout-thumb"><span class="layout-number">${number}</span><span>${htmlEscape(item.cv || "BASE")}</span></div>`;
 
     const safeLink = safeExternalUrl(item.link, "");
+
     const visualize = item.image
       ? `<button class="btn btn-visualize" type="button" data-layout-image="${htmlEscape(item.image)}" data-layout-name="${htmlEscape(item.name)}">◉ Visualizar</button>`
       : `<span class="btn btn-secondary" aria-disabled="true">Sem imagem</span>`;
+
     const open = safeLink
       ? `<a class="btn btn-primary" href="${htmlEscape(safeLink)}" target="_blank" rel="noopener">↗ Abrir no Clash</a>`
       : `<span class="btn btn-secondary" aria-disabled="true">Link em breve</span>`;
@@ -413,6 +511,7 @@ function setupLayoutImageViewer() {
   viewer.className = "layout-image-viewer";
   viewer.hidden = true;
   viewer.setAttribute("aria-hidden", "true");
+
   viewer.innerHTML = `
     <div class="layout-image-viewer-backdrop" data-close-viewer></div>
     <div class="layout-image-viewer-dialog" role="dialog" aria-modal="true" aria-label="Visualização ampliada do layout">
@@ -420,38 +519,49 @@ function setupLayoutImageViewer() {
       <img class="layout-image-viewer-img" alt="">
       <div class="layout-image-viewer-caption"></div>
     </div>`;
+
   document.body.appendChild(viewer);
 
   const image = viewer.querySelector(".layout-image-viewer-img");
   const caption = viewer.querySelector(".layout-image-viewer-caption");
   const closeButton = viewer.querySelector(".layout-image-viewer-close");
+
   let lastTrigger = null;
 
   const closeViewer = () => {
     if (viewer.hidden) return;
+
     viewer.classList.remove("show");
     viewer.setAttribute("aria-hidden", "true");
     document.body.classList.remove("image-viewer-open");
+
     setTimeout(() => {
       viewer.hidden = true;
       image.removeAttribute("src");
       image.alt = "";
       caption.textContent = "";
     }, 180);
-    if (lastTrigger && document.contains(lastTrigger)) lastTrigger.focus({ preventScroll: true });
+
+    if (lastTrigger && document.contains(lastTrigger)) {
+      lastTrigger.focus({ preventScroll: true });
+    }
   };
 
   const openViewer = (button) => {
     const src = safeExternalUrl(button.dataset.layoutImage, "");
     if (!src) return;
+
     const name = button.dataset.layoutName || "Layout";
+
     lastTrigger = button;
     image.src = src;
     image.alt = name;
     caption.textContent = name;
+
     viewer.hidden = false;
     viewer.setAttribute("aria-hidden", "false");
     document.body.classList.add("image-viewer-open");
+
     requestAnimationFrame(() => {
       viewer.classList.add("show");
       closeButton.focus({ preventScroll: true });
@@ -463,39 +573,62 @@ function setupLayoutImageViewer() {
     if (!button || button.disabled) return;
     openViewer(button);
   });
+
   closeButton.addEventListener("click", closeViewer);
   viewer.querySelector("[data-close-viewer]").addEventListener("click", closeViewer);
-  document.addEventListener("keydown", (event) => { if (event.key === "Escape" && !viewer.hidden) closeViewer(); });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !viewer.hidden) closeViewer();
+  });
 }
 
 function syncPublicCvFilters() {
   const filters = $("layoutFilters");
   if (!filters) return;
+
   const cvs = new Set([12, 13, 14, 15, 16, 17, 18]);
+
   allLayouts.forEach((item) => {
     const match = String(item.cv || "").match(/^CV(\d+)$/);
     const n = match ? Number(match[1]) : 0;
+
     if (Number.isInteger(n) && n > 0) cvs.add(n);
   });
+
   const ordered = [...cvs].sort((a, b) => a - b);
-  filters.innerHTML = ordered.map((cv) => `<button class="filter-btn${activeCv === `CV${cv}` ? " active" : ""}" type="button" data-cv="CV${cv}">CV${cv}</button>`).join("");
+
+  filters.innerHTML = ordered.map((cv) => `
+    <button class="filter-btn${activeCv === `CV${cv}` ? " active" : ""}" type="button" data-cv="CV${cv}">CV${cv}</button>
+  `).join("");
 }
 
 function setupLayoutFilters() {
   const filters = $("layoutFilters");
   if (!filters) return;
+
   filters.addEventListener("click", (event) => {
     const btn = event.target.closest("[data-cv]");
     if (!btn) return;
+
     activeCv = btn.dataset.cv;
-    filters.querySelectorAll(".filter-btn").forEach((node) => node.classList.toggle("active", node === btn));
+
+    filters.querySelectorAll(".filter-btn").forEach((node) => {
+      node.classList.toggle("active", node === btn);
+    });
+
     renderLayouts();
-    if (window.innerWidth <= 780) setTimeout(() => $("layoutsStatus")?.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
+
+    if (window.innerWidth <= 780) {
+      setTimeout(() => {
+        $("layoutsStatus")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 80);
+    }
   });
 }
 
 async function loadCmsAndLayouts() {
   const sb = getSupabaseClient();
+
   if (!sb) {
     syncPublicCvFilters();
     renderLayouts();
@@ -503,8 +636,15 @@ async function loadCmsAndLayouts() {
   }
 
   try {
-    const { data: configData, error: configError } = await sb.from("site_config").select("*").eq("id", 1).maybeSingle();
-    if (!configError && configData) applySiteConfig(configData);
+    const { data: configData, error: configError } = await sb
+      .from("site_config")
+      .select("*")
+      .eq("id", 1)
+      .maybeSingle();
+
+    if (!configError && configData) {
+      applySiteConfig(configData);
+    }
   } catch (error) {
     console.warn("CMS não pôde ser carregado:", error);
   }
@@ -532,6 +672,7 @@ async function loadCmsAndLayouts() {
 
     syncPublicCvFilters();
     renderLayouts();
+
   } catch (error) {
     console.error("Erro ao carregar layouts:", error);
     syncPublicCvFilters();
@@ -546,22 +687,33 @@ function setCurrentYear() {
 // Mantém o conteúdo público sincronizado sem exigir F5/Atualizar manualmente.
 let publicRefreshPromise = null;
 let publicLastRefreshAt = 0;
+
 const PUBLIC_REFRESH_INTERVAL_MS = 45000;
 
 function refreshPublicContent({ force = false } = {}) {
   const now = Date.now();
-  if (!force && now - publicLastRefreshAt < 2500) return publicRefreshPromise || Promise.resolve();
+
+  if (!force && now - publicLastRefreshAt < 2500) {
+    return publicRefreshPromise || Promise.resolve();
+  }
+
   if (publicRefreshPromise) return publicRefreshPromise;
 
   publicLastRefreshAt = now;
+
   publicRefreshPromise = Promise.resolve(loadCmsAndLayouts())
-    .catch((error) => console.warn("Atualização automática não pôde ser concluída:", error))
-    .finally(() => { publicRefreshPromise = null; });
+    .catch((error) => {
+      console.warn("Atualização automática não pôde ser concluída:", error);
+    })
+    .finally(() => {
+      publicRefreshPromise = null;
+    });
+
   return publicRefreshPromise;
 }
 
 function setupAutomaticPublicRefresh() {
-  // Ao voltar para uma página restaurada pelo navegador (cache de navegação), busca os dados atuais.
+  // Ao voltar para uma página restaurada pelo navegador, busca os dados atuais.
   window.addEventListener("pageshow", (event) => {
     if (event.persisted) refreshPublicContent({ force: true });
   });
@@ -572,7 +724,9 @@ function setupAutomaticPublicRefresh() {
   });
 
   // Se a internet cair e voltar, busca novamente as informações do Supabase.
-  window.addEventListener("online", () => refreshPublicContent({ force: true }));
+  window.addEventListener("online", () => {
+    refreshPublicContent({ force: true });
+  });
 
   // Enquanto a página estiver aberta e visível, verifica mudanças periodicamente.
   window.setInterval(() => {
