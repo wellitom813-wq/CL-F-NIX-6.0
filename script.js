@@ -17,12 +17,27 @@ const DEFAULT_SECTION_ORDER = ["hero","quick_links","clans","about","mission","r
 let allLayouts = [];
 let activeCv = null;
 
-// CORRIGIDO: agora permite aplicar textos vazios.
 function text(id, value) {
   const node = $(id);
   if (node && value !== undefined && value !== null) {
     node.textContent = String(value);
   }
+}
+
+function hideEmptyText(id, value) {
+  const node = $(id);
+  if (!node) return;
+
+  const empty = value === undefined || value === null || String(value).trim() === "";
+  node.hidden = empty;
+}
+
+function hideEmptyTextContainer(id, value) {
+  const node = $(id);
+  if (!node) return;
+
+  const empty = value === undefined || value === null || String(value).trim() === "";
+  node.hidden = empty;
 }
 
 function htmlEscape(value) {
@@ -36,6 +51,7 @@ function htmlEscape(value) {
 
 function safeExternalUrl(value, fallback = "") {
   if (!value || typeof value !== "string") return fallback;
+
   try {
     const url = new URL(value, window.location.href);
     if (!["http:", "https:"].includes(url.protocol)) return fallback;
@@ -57,9 +73,12 @@ function setLink(id, href) {
 
 function normalizeCv(value) {
   if (value === undefined || value === null) return "";
+
   const raw = String(value).trim().toUpperCase();
   const match = raw.match(/(?:CV|TH)?\s*(\d{1,3})/);
+
   if (!match) return raw;
+
   const n = Number(match[1]);
   return Number.isInteger(n) && n > 0 ? `CV${n}` : raw;
 }
@@ -160,7 +179,6 @@ function renderResources(resources) {
 
   const enabled = resources.filter((item) => item && item.enabled !== false);
 
-  // CORRIGIDO: limpa a área quando todos os itens forem removidos.
   if (!enabled.length) {
     grid.innerHTML = "";
     return;
@@ -181,7 +199,6 @@ function renderValues(values) {
 
   const enabled = values.filter((item) => item && item.enabled !== false);
 
-  // CORRIGIDO: limpa a área quando todos os itens forem removidos.
   if (!enabled.length) {
     grid.innerHTML = "";
     return;
@@ -283,6 +300,9 @@ function applySiteConfig(cfg) {
   text("aboutText1", cfg.about_text_1);
   text("aboutText2", cfg.about_text_2);
 
+  hideEmptyText("aboutText1", cfg.about_text_1);
+  hideEmptyText("aboutText2", cfg.about_text_2);
+
   text("clansKicker", cfg.clans_kicker);
   text("clansTitle", cfg.clans_title);
   text("clansSubtitle", cfg.clans_subtitle);
@@ -314,6 +334,8 @@ function applySiteConfig(cfg) {
   text("missionKicker", cfg.mission_kicker);
   text("missionTitle", cfg.mission_title);
   text("missionText", cfg.mission_text);
+
+  hideEmptyText("missionText", cfg.mission_text);
 
   text("resourcesKicker", cfg.resources_kicker);
   text("resourcesTitle", cfg.resources_title);
@@ -371,7 +393,6 @@ function applySiteConfig(cfg) {
   let accent = /^#[0-9a-f]{6}$/i.test(cfg.accent_color || "") ? cfg.accent_color : null;
   let bg = /^#[0-9a-f]{6}$/i.test(cfg.background_color || "") ? cfg.background_color : null;
 
-  // Mantém o tema clássico vermelho como padrão e reconverte o tema dourado anterior.
   if (["#b77a18","#d83a1e"].includes(String(primary).toLowerCase())) primary = "#b82c15";
   if (["#f2c767","#f2ad22"].includes(String(accent).toLowerCase())) accent = "#df4b1d";
   if (["#070706","#070605"].includes(String(bg).toLowerCase())) bg = "#080705";
@@ -684,7 +705,6 @@ function setCurrentYear() {
   text("year", new Date().getFullYear());
 }
 
-// Mantém o conteúdo público sincronizado sem exigir F5/Atualizar manualmente.
 let publicRefreshPromise = null;
 let publicLastRefreshAt = 0;
 
@@ -713,22 +733,18 @@ function refreshPublicContent({ force = false } = {}) {
 }
 
 function setupAutomaticPublicRefresh() {
-  // Ao voltar para uma página restaurada pelo navegador, busca os dados atuais.
   window.addEventListener("pageshow", (event) => {
     if (event.persisted) refreshPublicContent({ force: true });
   });
 
-  // Ao voltar para a aba/site depois de usar o painel ou outro app, sincroniza novamente.
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden) refreshPublicContent({ force: true });
   });
 
-  // Se a internet cair e voltar, busca novamente as informações do Supabase.
   window.addEventListener("online", () => {
     refreshPublicContent({ force: true });
   });
 
-  // Enquanto a página estiver aberta e visível, verifica mudanças periodicamente.
   window.setInterval(() => {
     if (!document.hidden) refreshPublicContent();
   }, PUBLIC_REFRESH_INTERVAL_MS);
