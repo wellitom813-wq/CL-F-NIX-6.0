@@ -1,56 +1,10 @@
-
+/* VILLA BASIS — catálogo público
+   Mantém a leitura do Supabase e os campos atuais da tabela layouts.
+   Não altera nem grava dados no banco. */
 const $ = (id) => document.getElementById(id);
-
-const DEFAULT_STORE_URL = "https://store.supercell.com/pt/clashofclans";
-const DEFAULT_CLAN_URL = "https://link.clashofclans.com/pt?action=OpenClanProfile&tag=VJ8GGLR8";
-const DEFAULT_GROUP_URL = "https://chat.whatsapp.com/FJ7RJlbYxWT6wyPDNKk0GF";
-
-const DEFAULT_CLANS = [
-  { name: "CLÃ PRINCIPAL", tag: "#VJ8GGLR8", url: "https://link.clashofclans.com/pt?action=OpenClanProfile&tag=VJ8GGLR8", subtitle: "Família Fênix", enabled: true },
-  { name: "CLÃ 2", tag: "#2GRGQVYQJ", url: "https://link.clashofclans.com/pt?action=OpenClanProfile&tag=2GRGQVYQJ", subtitle: "Família Fênix", enabled: true },
-  { name: "CLÃ 3", tag: "#2G89YJVV8", url: "https://link.clashofclans.com/pt?action=OpenClanProfile&tag=2G89YJVV8", subtitle: "Família Fênix", enabled: true },
-  { name: "CLÃ 4", tag: "#2CYY0VPUV", url: "https://link.clashofclans.com/pt?action=OpenClanProfile&tag=2CYY0VPUV", subtitle: "Família Fênix", enabled: true }
-];
-
-const DEFAULT_SECTION_ORDER = ["hero","quick_links","clans","about","mission","resources","layouts","values","family"];
 
 let allLayouts = [];
 let activeCv = null;
-
-function text(id, value) {
-  const node = $(id);
-  if (node && value !== undefined && value !== null) {
-    node.textContent = String(value);
-  }
-}
-
-function setElementVisibility(id, visible) {
-  const node = $(id);
-  if (!node) return;
-
-  node.hidden = !visible;
-  node.style.display = visible ? "" : "none";
-}
-
-function hideEmptyText(id, value) {
-  const node = $(id);
-  if (!node) return;
-
-  const empty = value === undefined || value === null || String(value).trim() === "";
-  setElementVisibility(id, !empty);
-}
-
-function hideEmptyTextContainer(id, value) {
-  const node = $(id);
-  if (!node) return;
-
-  const empty = value === undefined || value === null || String(value).trim() === "";
-  setElementVisibility(id, !empty);
-}
-
-function hasText(value) {
-  return value !== undefined && value !== null && String(value).trim() !== "";
-}
 
 function htmlEscape(value) {
   return String(value ?? "")
@@ -63,45 +17,28 @@ function htmlEscape(value) {
 
 function safeExternalUrl(value, fallback = "") {
   if (!value || typeof value !== "string") return fallback;
-
   try {
     const url = new URL(value, window.location.href);
-    if (!["http:", "https:"].includes(url.protocol)) return fallback;
-    return url.href;
+    return ["http:", "https:"].includes(url.protocol) ? url.href : fallback;
   } catch {
     return fallback;
   }
 }
 
-function safeStoreUrl(value) {
-  if (!value || /share\.google/i.test(value)) return DEFAULT_STORE_URL;
-  return safeExternalUrl(value, DEFAULT_STORE_URL);
-}
-
-function setLink(id, href) {
-  const node = $(id);
-  if (node && href) node.href = href;
-}
-
 function normalizeCv(value) {
   if (value === undefined || value === null) return "";
-
   const raw = String(value).trim().toUpperCase();
   const match = raw.match(/(?:CV|TH)?\s*(\d{1,3})/);
-
   if (!match) return raw;
-
-  const n = Number(match[1]);
-  return Number.isInteger(n) && n > 0 ? `CV${n}` : raw;
+  const number = Number(match[1]);
+  return Number.isInteger(number) && number > 0 ? `CV${number}` : raw;
 }
 
 function getSupabaseClient() {
   const cfg = window.FENIX_SUPABASE || window.SUPABASE_CONFIG || window.supabaseConfig || {};
   const url = cfg.url || window.SUPABASE_URL;
   const key = cfg.anonKey || cfg.key || window.SUPABASE_ANON_KEY || window.SUPABASE_PUBLISHABLE_KEY;
-
   if (!window.supabase || !url || !key) return null;
-
   try {
     return window.supabase.createClient(url, key);
   } catch (error) {
@@ -114,463 +51,144 @@ function setupMenu() {
   const toggle = $("menuToggle");
   const nav = $("mainNav");
   const backdrop = $("menuBackdrop");
-
   if (!toggle || !nav) return;
 
-  let lastFocused = null;
-  const links = [...nav.querySelectorAll("a")];
-
-  const close = ({ restoreFocus = false } = {}) => {
+  const close = () => {
     nav.classList.remove("open");
     toggle.classList.remove("active");
     toggle.setAttribute("aria-expanded", "false");
     toggle.setAttribute("aria-label", "Abrir menu");
     document.body.classList.remove("menu-open");
-
-    if (backdrop) {
-      backdrop.classList.remove("show");
-      backdrop.setAttribute("aria-hidden", "true");
-    }
-
-    if (restoreFocus && lastFocused && document.contains(lastFocused)) {
-      lastFocused.focus({ preventScroll: true });
-    }
+    backdrop?.classList.remove("show");
+    backdrop?.setAttribute("aria-hidden", "true");
   };
 
-  const open = () => {
-    lastFocused = document.activeElement;
-    nav.classList.add("open");
-    toggle.classList.add("active");
-    toggle.setAttribute("aria-expanded", "true");
-    toggle.setAttribute("aria-label", "Fechar menu");
-    document.body.classList.add("menu-open");
-
-    if (backdrop) {
-      backdrop.classList.add("show");
-      backdrop.setAttribute("aria-hidden", "false");
-    }
-
-    requestAnimationFrame(() => links[0]?.focus({ preventScroll: true }));
-  };
-
-  toggle.addEventListener("click", (event) => {
-    event.preventDefault();
-    nav.classList.contains("open") ? close() : open();
+  toggle.addEventListener("click", () => {
+    const opening = !nav.classList.contains("open");
+    nav.classList.toggle("open", opening);
+    toggle.classList.toggle("active", opening);
+    toggle.setAttribute("aria-expanded", String(opening));
+    toggle.setAttribute("aria-label", opening ? "Fechar menu" : "Abrir menu");
+    document.body.classList.toggle("menu-open", opening);
+    backdrop?.classList.toggle("show", opening);
+    backdrop?.setAttribute("aria-hidden", String(!opening));
   });
 
-  links.forEach((link) => link.addEventListener("click", () => close()));
-  document.querySelector(".brand")?.addEventListener("click", () => close());
-  backdrop?.addEventListener("click", () => close({ restoreFocus: true }));
-
+  nav.querySelectorAll("a").forEach((link) => link.addEventListener("click", close));
+  backdrop?.addEventListener("click", close);
   document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && nav.classList.contains("open")) {
-      close({ restoreFocus: true });
-    }
+    if (event.key === "Escape") close();
   });
-
   window.addEventListener("resize", () => {
-    if (window.innerWidth > 780 && nav.classList.contains("open")) close();
+    if (window.innerWidth > 650) close();
   }, { passive: true });
 }
 
 function setupBackToTop() {
-  const btn = $("backToTop");
-  if (!btn) return;
-
-  const sync = () => btn.classList.toggle("show", window.scrollY > 550);
-
+  const button = $("backToTop");
+  if (!button) return;
+  const sync = () => button.classList.toggle("show", window.scrollY > 450);
   window.addEventListener("scroll", sync, { passive: true });
-  btn.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
-
+  button.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
   sync();
-}
-
-function renderResources(resources) {
-  const grid = $("resourcesGrid");
-  if (!grid) return false;
-
-  const items = Array.isArray(resources) ? resources : [];
-
-  const enabled = items.filter((item) =>
-    item &&
-    item.enabled !== false &&
-    (hasText(item.title) || hasText(item.text))
-  );
-
-  if (!enabled.length) {
-    grid.innerHTML = "";
-    return false;
-  }
-
-  grid.innerHTML = enabled.map((item) => `
-    <article class="feature-card">
-      <span>${htmlEscape(item.icon || "🔥")}</span>
-      <h3>${htmlEscape(item.title || "Clã Fênix")}</h3>
-      <p>${htmlEscape(item.text || "")}</p>
-    </article>
-  `).join("");
-
-  return true;
-}
-
-function renderValues(values) {
-  const grid = $("valuesGrid");
-  if (!grid) return false;
-
-  const items = Array.isArray(values) ? values : [];
-
-  const enabled = items.filter((item) =>
-    item &&
-    item.enabled !== false &&
-    hasText(item.title)
-  );
-
-  if (!enabled.length) {
-    grid.innerHTML = "";
-    return false;
-  }
-
-  grid.innerHTML = enabled.map((item) => `
-    <div class="value-pill">
-      <span>${htmlEscape(item.icon || "🔥")}</span>
-      ${htmlEscape(item.title)}
-    </div>
-  `).join("");
-
-  return true;
-}
-
-function renderClans(clans) {
-  const grid = $("clansGrid");
-  if (!grid) return;
-
-  const items = Array.isArray(clans) ? clans : DEFAULT_CLANS;
-  const enabled = items.filter((item) => item && item.enabled !== false);
-
-  grid.innerHTML = enabled.map((item, index) => {
-    const url = safeExternalUrl(item.url, "");
-
-    return `
-      <article class="clan-family-card${index === 0 ? " primary" : ""}">
-        <div class="clan-family-icon">⚔️</div>
-        <div class="clan-family-copy">
-          <small>${htmlEscape(item.name || `CLÃ ${index + 1}`)}</small>
-          <h3>${htmlEscape(item.tag || "")}</h3>
-          <p>${htmlEscape(item.subtitle || "Família Fênix")}</p>
-          ${url ? `<a href="${htmlEscape(url)}" target="_blank" rel="noopener">ABRIR NO JOGO</a>` : ""}
-        </div>
-      </article>`;
-  }).join("");
-}
-
-function applyLogoConfig(cfg) {
-  const logoUrl = safeExternalUrl(cfg.logo_url, "") || "assets/fenix-f.png";
-
-  document.querySelectorAll("[data-site-logo]").forEach((img) => {
-    img.src = logoUrl;
-  });
-
-  if (cfg.logo_url) {
-    document.querySelectorAll('link[rel="icon"]').forEach((favicon) => {
-      favicon.href = logoUrl;
-    });
-  }
-
-  const size = Math.min(520, Math.max(160, Number(cfg.logo_size || 320)));
-  document.documentElement.style.setProperty("--cms-logo-size", `${size}px`);
-
-  const radius = Math.min(40, Math.max(0, Number(cfg.card_radius ?? 18)));
-  document.documentElement.style.setProperty("--cms-card-radius", `${radius}px`);
-
-  const glow = Math.min(80, Math.max(0, Number(cfg.glow_strength ?? 30)));
-  document.documentElement.style.setProperty("--cms-logo-glow", `${glow}px`);
-
-  document.body.classList.toggle("logo-decorations", cfg.show_logo_decorations === true);
-
-  const caption = document.querySelector(".hero-logo-caption");
-  if (caption) caption.hidden = cfg.show_logo_caption !== true;
-}
-
-function applySectionOrder(order) {
-  const main = $("conteudo");
-  if (!main) return;
-
-  const requested = Array.isArray(order) ? order : DEFAULT_SECTION_ORDER;
-
-  const known = new Map(
-    [...main.querySelectorAll(":scope > [data-cms-section]")]
-      .map((el) => [el.dataset.cmsSection, el])
-  );
-
-  const finalOrder = [
-    ...requested,
-    ...DEFAULT_SECTION_ORDER.filter((key) => !requested.includes(key))
-  ];
-
-  finalOrder.forEach((key) => {
-    const el = known.get(key);
-    if (el) main.appendChild(el);
-  });
-}
-
-function applySiteConfig(cfg) {
-  if (!cfg) return;
-
-  const clanName = cfg.clan_name || "CLÃ FÊNIX";
-  const tag = cfg.clan_tag || "#VJ8GGLR8";
-
-  text("brandName", clanName);
-  text("footerClanName", clanName);
-  text("brandTag", tag);
-  text("footerTag", tag);
-  text("portalLabel", cfg.portal_label);
-  text("heroEyebrow", cfg.hero_eyebrow);
-
-  text("aboutKicker", cfg.about_kicker);
-  text("aboutTitle", cfg.about_title);
-  text("aboutText1", cfg.about_text_1);
-  text("aboutText2", cfg.about_text_2);
-
-  hideEmptyText("aboutText1", cfg.about_text_1);
-  hideEmptyText("aboutText2", cfg.about_text_2);
-
-  const hasAboutContent =
-    hasText(cfg.about_text_1) ||
-    hasText(cfg.about_text_2);
-
-  text("clansKicker", cfg.clans_kicker);
-  text("clansTitle", cfg.clans_title);
-  text("clansSubtitle", cfg.clans_subtitle);
-
-  text("footerMotto", cfg.footer_motto);
-  text("footerDisclaimer", cfg.footer_disclaimer);
-
-  renderClans(cfg.clans);
-  applyLogoConfig(cfg);
-  applySectionOrder(cfg.section_order);
-
-  if (cfg.hero_title && String(cfg.hero_title).trim()) {
-    const parts = String(cfg.hero_title).trim().split(/\s+/);
-
-    if (parts.length > 1) {
-      text("heroTitle", parts.slice(0, -1).join(" "));
-      text("heroTitleEm", parts.at(-1));
-    } else {
-      text("heroTitle", parts[0]);
-      text("heroTitleEm", "OFICIAL");
-    }
-  }
-
-  text("heroIntro", cfg.hero_intro);
-  text("heroSecondary", cfg.hero_secondary);
-  text("heroSlogan", cfg.slogan);
-
-  text("missionIcon", cfg.mission_icon);
-  text("missionKicker", cfg.mission_kicker);
-  text("missionTitle", cfg.mission_title);
-  text("missionText", cfg.mission_text);
-
-  hideEmptyText("missionText", cfg.mission_text);
-
-  const hasMissionContent = hasText(cfg.mission_text);
-
-  text("resourcesKicker", cfg.resources_kicker);
-  text("resourcesTitle", cfg.resources_title);
-  text("resourcesSubtitle", cfg.resources_subtitle);
-
-  const hasResources = renderResources(cfg.resources);
-
-  text("layoutsKicker", cfg.layouts_kicker);
-  text("layoutsTitle", cfg.layouts_title);
-  text("layoutsSubtitle", cfg.layouts_subtitle);
-
-  text("valuesKicker", cfg.values_kicker);
-  text("valuesTitle", cfg.values_title);
-
-  const hasValues = renderValues(cfg.values);
-
-  text("familyKicker", cfg.family_kicker);
-  text("familyTitle", cfg.family_title);
-  text("familyText", cfg.family_text);
-  text("familyQuote", cfg.family_quote);
-  text("familyCta", cfg.family_cta);
-
-  const clanUrl = safeExternalUrl(cfg.link_clan_url, DEFAULT_CLAN_URL);
-  const groupUrl = safeExternalUrl(cfg.link_group_url, DEFAULT_GROUP_URL);
-  const storeUrl = safeStoreUrl(cfg.link_store_url);
-
-  setLink("heroClanLink", clanUrl);
-  setLink("familyCta", clanUrl);
-  setLink("clanCard", clanUrl);
-  setLink("groupCard", groupUrl);
-  setLink("storeCard", storeUrl);
-
-  text("clanCardLabel", cfg.link_clan_label);
-  text("clanCardText", cfg.link_clan_text);
-  text("clanCardCta", cfg.link_clan_cta);
-
-  text("groupCardLabel", cfg.link_group_label);
-  text("groupCardText", cfg.link_group_text);
-  text("groupCardCta", cfg.link_group_cta);
-
-  text("storeCardLabel", cfg.link_store_label);
-  text("storeCardText", cfg.link_store_text);
-  text("storeCardCta", cfg.link_store_cta);
-
-  const heroBg = safeExternalUrl(cfg.hero_background_url, "");
-  const familyBg = safeExternalUrl(cfg.family_background_url, "");
-
-  if (heroBg) {
-    $("inicio")?.style.setProperty("--hero-image", `url("${heroBg.replaceAll('"', '%22')}")`);
-  }
-
-  if (familyBg) {
-    $("recruitmentCard")?.style.setProperty("--family-image", `url("${familyBg.replaceAll('"', '%22')}")`);
-  }
-
-  let primary = /^#[0-9a-f]{6}$/i.test(cfg.primary_color || "") ? cfg.primary_color : null;
-  let accent = /^#[0-9a-f]{6}$/i.test(cfg.accent_color || "") ? cfg.accent_color : null;
-  let bg = /^#[0-9a-f]{6}$/i.test(cfg.background_color || "") ? cfg.background_color : null;
-
-  if (["#b77a18","#d83a1e"].includes(String(primary).toLowerCase())) primary = "#b82c15";
-  if (["#f2c767","#f2ad22"].includes(String(accent).toLowerCase())) accent = "#df4b1d";
-  if (["#070706","#070605"].includes(String(bg).toLowerCase())) bg = "#080705";
-
-  if (primary) {
-    document.documentElement.style.setProperty("--primary", primary);
-    document.documentElement.style.setProperty("--primary-2", "#df4b1d");
-    document.documentElement.style.setProperty("--line", "rgba(223,75,29,.18)");
-    document.documentElement.style.setProperty("--line-strong", "rgba(223,75,29,.36)");
-    document.documentElement.style.setProperty("--glow", "rgba(223,75,29,.22)");
-  }
-
-  if (accent) {
-    document.documentElement.style.setProperty("--accent", accent);
-  }
-
-  if (bg) {
-    document.documentElement.style.setProperty("--bg", bg);
-    document.documentElement.style.setProperty("--bg-2", "#0c0807");
-  }
-
-  document.documentElement.style.setProperty("--accent-2", "#f05a2b");
-
-  const themeMeta = document.querySelector('meta[name="theme-color"]');
-  if (themeMeta) themeMeta.setAttribute("content", "#8d2016");
-
-  const visibilityMap = [
-    ["show_hero", "inicio"],
-    ["show_quick_links", "atalhos"],
-    ["show_clans", "clas"],
-    ["show_about", "sobre"],
-    ["show_mission", "missao"],
-    ["show_resources", "recursos"],
-    ["show_layouts", "layouts"],
-    ["show_values", "valores"],
-    ["show_family", "recrutamento"]
-  ];
-
-  const contentVisibility = {
-    show_about: hasAboutContent,
-    show_mission: hasMissionContent,
-    show_resources: hasResources,
-    show_values: hasValues
-  };
-
-  visibilityMap.forEach(([field, id]) => {
-    const hasContent = contentVisibility[field];
-    const enabledByConfig = cfg[field] !== false;
-    const hasRequiredContent = hasContent === undefined || hasContent;
-
-    setElementVisibility(id, enabledByConfig && hasRequiredContent);
-  });
 }
 
 function renderLayouts() {
   const grid = $("layoutsGrid");
   const status = $("layoutsStatus");
-
   if (!grid || !status) return;
 
   if (!activeCv) {
     grid.hidden = true;
     status.hidden = false;
-
-    status.innerHTML = `
-      <div class="empty-state">
-        <span>🏰</span>
-        <strong>Escolha um Centro de Vila.</strong>
-        <p>Toque em uma das galerias acima para visualizar somente os layouts daquele CV.</p>
-      </div>`;
-
+    status.innerHTML = `<div class="empty-state"><span>🏰</span><strong>Escolha um Centro de Vila.</strong><p>Selecione um dos CVs acima para visualizar os layouts disponíveis.</p></div>`;
     return;
   }
 
   const filtered = allLayouts.filter((item) => item.cv === activeCv);
-
   if (!filtered.length) {
     grid.hidden = true;
     status.hidden = false;
-
-    status.innerHTML = `
-      <div class="empty-state">
-        <span>🛡️</span>
-        <strong>Ainda não há layouts de ${htmlEscape(activeCv)} cadastrados.</strong>
-        <p>Quando novas bases forem adicionadas pelo painel, elas aparecerão aqui automaticamente.</p>
-      </div>`;
-
+    status.innerHTML = `<div class="empty-state"><span>🛡️</span><strong>Ainda não há layouts de ${htmlEscape(activeCv)} cadastrados.</strong><p>Novas bases adicionadas pelo painel aparecerão aqui automaticamente.</p></div>`;
     return;
   }
 
   status.hidden = false;
-
   status.innerHTML = `
     <div class="layout-status-bar">
       <div class="layout-status-icon">🛡️</div>
       <div class="layout-status-copy">
-        <strong>${htmlEscape(activeCv)} • Arsenal de Bases</strong>
-        <span>Escolha sua base, amplie a imagem e abra direto no Clash of Clans.</span>
+        <strong>${htmlEscape(activeCv)} • Catálogo de Bases</strong>
+        <span>Visualize a imagem ou abra o layout diretamente no Clash of Clans.</span>
       </div>
       <div class="layout-status-count"><b>${filtered.length}</b><small>${filtered.length === 1 ? "layout disponível" : "layouts disponíveis"}</small></div>
     </div>`;
 
   grid.hidden = false;
-
   grid.innerHTML = filtered.map((item, index) => {
     const number = String(index + 1).padStart(2, "0");
+    const name = item.name || `Base ${number}`;
+    const image = safeExternalUrl(item.image, "");
+    const link = safeExternalUrl(item.link, "");
 
-    const imageButton = item.image ? `
-      <button class="layout-thumb layout-thumb-button" type="button" data-layout-image="${htmlEscape(item.image)}" data-layout-name="${htmlEscape(item.name)}" aria-label="Ampliar imagem de ${htmlEscape(item.name)}">
-        <span class="layout-number">${number}</span>
-        <img src="${htmlEscape(item.image)}" alt="${htmlEscape(item.name)}" loading="lazy" onerror="this.closest('.layout-thumb-button')?.setAttribute('disabled','')">
-        <span class="layout-zoom-hint" aria-hidden="true">⌕</span>
-      </button>` : `
-      <div class="layout-thumb"><span class="layout-number">${number}</span><span>${htmlEscape(item.cv || "BASE")}</span></div>`;
+    const imageArea = image
+      ? `<button class="layout-thumb layout-thumb-button" type="button" data-layout-image="${htmlEscape(image)}" data-layout-name="${htmlEscape(name)}" aria-label="Ampliar imagem de ${htmlEscape(name)}">
+          <span class="layout-number">${number}</span>
+          <img src="${htmlEscape(image)}" alt="${htmlEscape(name)}" loading="lazy" onerror="this.closest('.layout-thumb-button')?.setAttribute('disabled','')">
+          <span class="layout-zoom-hint" aria-hidden="true">⌕</span>
+        </button>`
+      : `<div class="layout-thumb"><span class="layout-number">${number}</span><span>${htmlEscape(item.cv)}</span></div>`;
 
-    const safeLink = safeExternalUrl(item.link, "");
-
-    const visualize = item.image
-      ? `<button class="btn btn-visualize" type="button" data-layout-image="${htmlEscape(item.image)}" data-layout-name="${htmlEscape(item.name)}">◉ Visualizar</button>`
+    const visualize = image
+      ? `<button class="btn btn-visualize" type="button" data-layout-image="${htmlEscape(image)}" data-layout-name="${htmlEscape(name)}">◉ Visualizar</button>`
       : `<span class="btn btn-secondary" aria-disabled="true">Sem imagem</span>`;
 
-    const open = safeLink
-      ? `<a class="btn btn-primary" href="${htmlEscape(safeLink)}" target="_blank" rel="noopener">↗ Abrir no Clash</a>`
+    const open = link
+      ? `<a class="btn btn-primary" href="${htmlEscape(link)}" target="_blank" rel="noopener noreferrer">↗ Abrir no Clash</a>`
       : `<span class="btn btn-secondary" aria-disabled="true">Link em breve</span>`;
 
-    return `
-      <article class="layout-card">
-        ${imageButton}
-        <div class="layout-body">
-          <div class="layout-meta">
-            <span class="layout-badge">${htmlEscape(item.cv)}</span>
-            ${item.featured ? `<span class="layout-badge">⭐ DESTAQUE</span>` : ""}
-          </div>
-          <div class="layout-title-row"><h3>${htmlEscape(item.name || `Base ${number}`)}</h3></div>
-          <p>${htmlEscape(item.description || "Layout selecionado para a Família Fênix.")}</p>
-          <div class="layout-actions">${visualize}${open}</div>
+    return `<article class="layout-card">
+      ${imageArea}
+      <div class="layout-body">
+        <div class="layout-meta">
+          <span class="layout-badge">${htmlEscape(item.cv)}</span>
+          ${item.featured ? `<span class="layout-badge">⭐ DESTAQUE</span>` : ""}
         </div>
-      </article>`;
+        <div class="layout-title-row"><h3>${htmlEscape(name)}</h3></div>
+        <p>${htmlEscape(item.description || "Layout selecionado para a comunidade de Clash of Clans.")}</p>
+        <div class="layout-actions">${visualize}${open}</div>
+      </div>
+    </article>`;
   }).join("");
+}
+
+function syncPublicCvFilters() {
+  const filters = $("layoutFilters");
+  if (!filters) return;
+  const cvs = new Set([12, 13, 14, 15, 16, 17, 18]);
+  allLayouts.forEach((item) => {
+    const match = String(item.cv || "").match(/^CV(\d+)$/);
+    const number = match ? Number(match[1]) : 0;
+    if (Number.isInteger(number) && number > 0) cvs.add(number);
+  });
+  filters.innerHTML = [...cvs].sort((a, b) => a - b).map((cv) =>
+    `<button class="filter-btn${activeCv === `CV${cv}` ? " active" : ""}" type="button" data-cv="CV${cv}" aria-pressed="${activeCv === `CV${cv}`}">CV${cv}</button>`
+  ).join("");
+}
+
+function setupLayoutFilters() {
+  const filters = $("layoutFilters");
+  if (!filters) return;
+  filters.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-cv]");
+    if (!button) return;
+    activeCv = button.dataset.cv;
+    syncPublicCvFilters();
+    renderLayouts();
+    if (window.innerWidth <= 650) {
+      window.setTimeout(() => $("layoutsStatus")?.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
+    }
+  });
 }
 
 function setupLayoutImageViewer() {
@@ -581,7 +199,6 @@ function setupLayoutImageViewer() {
   viewer.className = "layout-image-viewer";
   viewer.hidden = true;
   viewer.setAttribute("aria-hidden", "true");
-
   viewer.innerHTML = `
     <div class="layout-image-viewer-backdrop" data-close-viewer></div>
     <div class="layout-image-viewer-dialog" role="dialog" aria-modal="true" aria-label="Visualização ampliada do layout">
@@ -589,49 +206,37 @@ function setupLayoutImageViewer() {
       <img class="layout-image-viewer-img" alt="">
       <div class="layout-image-viewer-caption"></div>
     </div>`;
-
   document.body.appendChild(viewer);
 
   const image = viewer.querySelector(".layout-image-viewer-img");
   const caption = viewer.querySelector(".layout-image-viewer-caption");
   const closeButton = viewer.querySelector(".layout-image-viewer-close");
-
   let lastTrigger = null;
 
-  const closeViewer = () => {
+  const close = () => {
     if (viewer.hidden) return;
-
     viewer.classList.remove("show");
     viewer.setAttribute("aria-hidden", "true");
     document.body.classList.remove("image-viewer-open");
-
-    setTimeout(() => {
+    window.setTimeout(() => {
       viewer.hidden = true;
       image.removeAttribute("src");
       image.alt = "";
       caption.textContent = "";
     }, 180);
-
-    if (lastTrigger && document.contains(lastTrigger)) {
-      lastTrigger.focus({ preventScroll: true });
-    }
+    if (lastTrigger && document.contains(lastTrigger)) lastTrigger.focus({ preventScroll: true });
   };
 
-  const openViewer = (button) => {
+  const open = (button) => {
     const src = safeExternalUrl(button.dataset.layoutImage, "");
     if (!src) return;
-
-    const name = button.dataset.layoutName || "Layout";
-
     lastTrigger = button;
     image.src = src;
-    image.alt = name;
-    caption.textContent = name;
-
+    image.alt = button.dataset.layoutName || "Layout";
+    caption.textContent = button.dataset.layoutName || "Layout";
     viewer.hidden = false;
     viewer.setAttribute("aria-hidden", "false");
     document.body.classList.add("image-viewer-open");
-
     requestAnimationFrame(() => {
       viewer.classList.add("show");
       closeButton.focus({ preventScroll: true });
@@ -640,83 +245,35 @@ function setupLayoutImageViewer() {
 
   grid.addEventListener("click", (event) => {
     const button = event.target.closest("[data-layout-image]");
-    if (!button || button.disabled) return;
-    openViewer(button);
+    if (button && !button.disabled) open(button);
   });
-
-  closeButton.addEventListener("click", closeViewer);
-  viewer.querySelector("[data-close-viewer]").addEventListener("click", closeViewer);
-
+  closeButton.addEventListener("click", close);
+  viewer.querySelector("[data-close-viewer]").addEventListener("click", close);
   document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && !viewer.hidden) closeViewer();
-  });
-}
-
-function syncPublicCvFilters() {
-  const filters = $("layoutFilters");
-  if (!filters) return;
-
-  const cvs = new Set([12, 13, 14, 15, 16, 17, 18]);
-
-  allLayouts.forEach((item) => {
-    const match = String(item.cv || "").match(/^CV(\d+)$/);
-    const n = match ? Number(match[1]) : 0;
-
-    if (Number.isInteger(n) && n > 0) cvs.add(n);
-  });
-
-  const ordered = [...cvs].sort((a, b) => a - b);
-
-  filters.innerHTML = ordered.map((cv) => `
-    <button class="filter-btn${activeCv === `CV${cv}` ? " active" : ""}" type="button" data-cv="CV${cv}">CV${cv}</button>
-  `).join("");
-}
-
-function setupLayoutFilters() {
-  const filters = $("layoutFilters");
-  if (!filters) return;
-
-  filters.addEventListener("click", (event) => {
-    const btn = event.target.closest("[data-cv]");
-    if (!btn) return;
-
-    activeCv = btn.dataset.cv;
-
-    filters.querySelectorAll(".filter-btn").forEach((node) => {
-      node.classList.toggle("active", node === btn);
-    });
-
-    renderLayouts();
-
-    if (window.innerWidth <= 780) {
-      setTimeout(() => {
-        $("layoutsStatus")?.scrollIntoView({ behavior: "smooth", block: "start" });
-      }, 80);
-    }
+    if (event.key === "Escape" && !viewer.hidden) close();
   });
 }
 
 async function loadCmsAndLayouts() {
   const sb = getSupabaseClient();
-
   if (!sb) {
+    allLayouts = [];
     syncPublicCvFilters();
     renderLayouts();
     return;
   }
 
+  /* Mantém a consulta de configuração para compatibilidade com o CMS atual.
+     A identidade pública Villa Basis não é sobrescrita pelos campos antigos do clã. */
   try {
-    const { data: configData, error: configError } = await sb
+    const { error: configError } = await sb
       .from("site_config")
       .select("*")
       .eq("id", 1)
       .maybeSingle();
-
-    if (!configError && configData) {
-      applySiteConfig(configData);
-    }
+    if (configError) console.warn("Configuração do site não pôde ser consultada:", configError);
   } catch (error) {
-    console.warn("CMS não pôde ser carregado:", error);
+    console.warn("CMS não pôde ser consultado:", error);
   }
 
   try {
@@ -736,48 +293,41 @@ async function loadCmsAndLayouts() {
       name: row.nome || `Layout ${normalizeCv(row.cv) || "Base"}`,
       image: row.imagem_url || "",
       link: row.link_layout || "",
-      description: row.descricao || "Layout selecionado pelo Clã Fênix.",
+      description: row.descricao || "Layout selecionado para a comunidade de Clash of Clans.",
       featured: row.destaque === true
     })).filter((item) => /^CV\d+$/.test(item.cv));
 
     syncPublicCvFilters();
     renderLayouts();
-
   } catch (error) {
     console.error("Erro ao carregar layouts:", error);
+    const status = $("layoutsStatus");
+    if (status) {
+      status.hidden = false;
+      status.innerHTML = `<div class="empty-state"><span>⚠️</span><strong>Não foi possível carregar o catálogo.</strong><p>Verifique a conexão e tente novamente em instantes.</p></div>`;
+    }
     syncPublicCvFilters();
     renderLayouts();
   }
 }
 
 function setCurrentYear() {
-  text("year", new Date().getFullYear());
+  const year = $("year");
+  if (year) year.textContent = new Date().getFullYear();
 }
 
 let publicRefreshPromise = null;
 let publicLastRefreshAt = 0;
-
 const PUBLIC_REFRESH_INTERVAL_MS = 45000;
 
 function refreshPublicContent({ force = false } = {}) {
   const now = Date.now();
-
-  if (!force && now - publicLastRefreshAt < 2500) {
-    return publicRefreshPromise || Promise.resolve();
-  }
-
+  if (!force && now - publicLastRefreshAt < 2500) return publicRefreshPromise || Promise.resolve();
   if (publicRefreshPromise) return publicRefreshPromise;
-
   publicLastRefreshAt = now;
-
   publicRefreshPromise = Promise.resolve(loadCmsAndLayouts())
-    .catch((error) => {
-      console.warn("Atualização automática não pôde ser concluída:", error);
-    })
-    .finally(() => {
-      publicRefreshPromise = null;
-    });
-
+    .catch((error) => console.warn("Atualização automática não pôde ser concluída:", error))
+    .finally(() => { publicRefreshPromise = null; });
   return publicRefreshPromise;
 }
 
@@ -785,15 +335,10 @@ function setupAutomaticPublicRefresh() {
   window.addEventListener("pageshow", (event) => {
     if (event.persisted) refreshPublicContent({ force: true });
   });
-
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden) refreshPublicContent({ force: true });
   });
-
-  window.addEventListener("online", () => {
-    refreshPublicContent({ force: true });
-  });
-
+  window.addEventListener("online", () => refreshPublicContent({ force: true }));
   window.setInterval(() => {
     if (!document.hidden) refreshPublicContent();
   }, PUBLIC_REFRESH_INTERVAL_MS);
@@ -804,8 +349,8 @@ document.addEventListener("DOMContentLoaded", () => {
   setupBackToTop();
   setupLayoutFilters();
   setupLayoutImageViewer();
-  syncPublicCvFilters();
   setCurrentYear();
+  syncPublicCvFilters();
   setupAutomaticPublicRefresh();
   refreshPublicContent({ force: true });
 });
