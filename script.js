@@ -24,12 +24,20 @@ function text(id, value) {
   }
 }
 
+function setElementVisibility(id, visible) {
+  const node = $(id);
+  if (!node) return;
+
+  node.hidden = !visible;
+  node.style.display = visible ? "" : "none";
+}
+
 function hideEmptyText(id, value) {
   const node = $(id);
   if (!node) return;
 
   const empty = value === undefined || value === null || String(value).trim() === "";
-  node.hidden = empty;
+  setElementVisibility(id, !empty);
 }
 
 function hideEmptyTextContainer(id, value) {
@@ -37,7 +45,11 @@ function hideEmptyTextContainer(id, value) {
   if (!node) return;
 
   const empty = value === undefined || value === null || String(value).trim() === "";
-  node.hidden = empty;
+  setElementVisibility(id, !empty);
+}
+
+function hasText(value) {
+  return value !== undefined && value !== null && String(value).trim() !== "";
 }
 
 function htmlEscape(value) {
@@ -175,13 +187,19 @@ function setupBackToTop() {
 
 function renderResources(resources) {
   const grid = $("resourcesGrid");
-  if (!grid || !Array.isArray(resources)) return;
+  if (!grid) return false;
 
-  const enabled = resources.filter((item) => item && item.enabled !== false);
+  const items = Array.isArray(resources) ? resources : [];
+
+  const enabled = items.filter((item) =>
+    item &&
+    item.enabled !== false &&
+    (hasText(item.title) || hasText(item.text))
+  );
 
   if (!enabled.length) {
     grid.innerHTML = "";
-    return;
+    return false;
   }
 
   grid.innerHTML = enabled.map((item) => `
@@ -191,22 +209,35 @@ function renderResources(resources) {
       <p>${htmlEscape(item.text || "")}</p>
     </article>
   `).join("");
+
+  return true;
 }
 
 function renderValues(values) {
   const grid = $("valuesGrid");
-  if (!grid || !Array.isArray(values)) return;
+  if (!grid) return false;
 
-  const enabled = values.filter((item) => item && item.enabled !== false);
+  const items = Array.isArray(values) ? values : [];
+
+  const enabled = items.filter((item) =>
+    item &&
+    item.enabled !== false &&
+    hasText(item.title)
+  );
 
   if (!enabled.length) {
     grid.innerHTML = "";
-    return;
+    return false;
   }
 
   grid.innerHTML = enabled.map((item) => `
-    <div class="value-pill"><span>${htmlEscape(item.icon || "🔥")}</span>${htmlEscape(item.title || "")}</div>
+    <div class="value-pill">
+      <span>${htmlEscape(item.icon || "🔥")}</span>
+      ${htmlEscape(item.title)}
+    </div>
   `).join("");
+
+  return true;
 }
 
 function renderClans(clans) {
@@ -303,6 +334,10 @@ function applySiteConfig(cfg) {
   hideEmptyText("aboutText1", cfg.about_text_1);
   hideEmptyText("aboutText2", cfg.about_text_2);
 
+  const hasAboutContent =
+    hasText(cfg.about_text_1) ||
+    hasText(cfg.about_text_2);
+
   text("clansKicker", cfg.clans_kicker);
   text("clansTitle", cfg.clans_title);
   text("clansSubtitle", cfg.clans_subtitle);
@@ -337,10 +372,13 @@ function applySiteConfig(cfg) {
 
   hideEmptyText("missionText", cfg.mission_text);
 
+  const hasMissionContent = hasText(cfg.mission_text);
+
   text("resourcesKicker", cfg.resources_kicker);
   text("resourcesTitle", cfg.resources_title);
   text("resourcesSubtitle", cfg.resources_subtitle);
-  renderResources(cfg.resources);
+
+  const hasResources = renderResources(cfg.resources);
 
   text("layoutsKicker", cfg.layouts_kicker);
   text("layoutsTitle", cfg.layouts_title);
@@ -348,7 +386,8 @@ function applySiteConfig(cfg) {
 
   text("valuesKicker", cfg.values_kicker);
   text("valuesTitle", cfg.values_title);
-  renderValues(cfg.values);
+
+  const hasValues = renderValues(cfg.values);
 
   text("familyKicker", cfg.family_kicker);
   text("familyTitle", cfg.family_title);
@@ -431,9 +470,19 @@ function applySiteConfig(cfg) {
     ["show_family", "recrutamento"]
   ];
 
+  const contentVisibility = {
+    show_about: hasAboutContent,
+    show_mission: hasMissionContent,
+    show_resources: hasResources,
+    show_values: hasValues
+  };
+
   visibilityMap.forEach(([field, id]) => {
-    const section = $(id);
-    if (section) section.hidden = cfg[field] === false;
+    const hasContent = contentVisibility[field];
+    const enabledByConfig = cfg[field] !== false;
+    const hasRequiredContent = hasContent === undefined || hasContent;
+
+    setElementVisibility(id, enabledByConfig && hasRequiredContent);
   });
 }
 
